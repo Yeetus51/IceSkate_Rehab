@@ -27,8 +27,8 @@
 .vs
 
 # dll and onnx 
-.dll
-.onnx
+*.dll
+*.onnx
 
 # Gradle cache directory
 .gradle
