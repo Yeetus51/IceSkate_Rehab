@@ -102,7 +102,7 @@
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\GestureDemo\Scripts\CubeGestureListener.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectScripts\PortraitBackground.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\DepthSpriteViewerMulticam.cs" />
-    <Compile Include="Assets\MatiasStuff\Scripts\MovingObject.cs" />
+    <Compile Include="Assets\Scripts\MovingObject.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\PoseDetectionDemo\Scripts\DynamicPoseDetector.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\FittingRoomDemo\Scripts\UserBodyBlender.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectScripts\KinectUserBodyMerger.cs" />
@@ -141,10 +141,10 @@
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\BlobDetectionDemo\Scripts\CollisionLogger.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\FaceDemo\Scripts\ShowFaceImage.cs" />
     <Compile Include="Assets\LeaningDemo.cs" />
-    <Compile Include="Assets\MatiasStuff\Scripts\Scroller.cs" />
+    <Compile Include="Assets\Scripts\Scroller.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\PointCloudDemo\Scripts\ThreeDMovieRenderer.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectScripts\SensorPoseStartupEstimator.cs" />
-    <Compile Include="Assets\MatiasStuff\Scripts\PlayerMovement.cs" />
+    <Compile Include="Assets\Scripts\PlayerMovement.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectScripts\BackgroundColorCamDepthImage.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectScripts\KinectGestureManager.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\RecorderDemo\Scripts\BodyDataPlayerController.cs" />

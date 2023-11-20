@@ -4,8 +4,13 @@ using UnityEngine;
 
 public class MovingObject : MonoBehaviour
 {
-    [SerializeField] private Vector3 _movement;
-    [SerializeField] private float _movementSpeed;
+
+    private Scroller scroller; 
+
+    public void SetScroller(Scroller pScroller)
+    {
+        scroller = pScroller;
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -15,7 +20,10 @@ public class MovingObject : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        this.transform.position += _movement * _movementSpeed;
+        if (scroller)
+        {
+            this.transform.position -= Vector3.forward * scroller.speed;
+        }
     }
 
 }
