@@ -1102,13 +1102,9 @@ MonoBehaviour:
       type: 3}
     IceIWith2CornerPiece: {fileID: 919132149155446097, guid: 1fd48e4a53fc7c14cacf0e120c02c3dd,
       type: 3}
-    IceIslandCornerPiece: {fileID: 0}
-    IceSingleDeadEndPathPiece: {fileID: 0}
-    IceSinglePathPiece: {fileID: 0}
-    IceStrandedPiece: {fileID: 0}
-    IceTurnPathPiece: {fileID: 0}
   speed: 0.1
-  spawnDistance: 50
+  spawnDistance: 100
+  despawnDistance: 50
 --- !u!4 &1438923501
 Transform:
   m_ObjectHideFlags: 0
