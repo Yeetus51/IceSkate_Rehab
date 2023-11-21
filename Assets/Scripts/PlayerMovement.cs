@@ -45,8 +45,6 @@ public class PlayerMovement : MonoBehaviour
         float newXPostion = x - Mathf.Sin(x * Mathf.PI * 2) * 0.15f; 
         transform.position = new Vector3(newXPostion, transform.position.y, transform.position.z);
 
-
-
     }
 
     private void UpdateLane() => this.transform.position = new Vector3(currentLane * 2, this.transform.position.y, this.transform.position.z);
