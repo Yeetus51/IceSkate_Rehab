@@ -18,16 +18,24 @@ public class Scroller : MonoBehaviour
     [Range(0.1f,2)]
     [SerializeField] public float speed = 0.1f;
 
-    [Range(10, 50)]
+    [Range(10, 100)]
     [SerializeField] float spawnDistance = 10;
+
+    [Range(10, 50)]
+    [SerializeField] public float despawnDistance = 10;
 
     float timer = 0;
 
-    MovingObject previousBridgeObject; 
-    MovingObject previousIceObject;
+    GameObject previousBridgeObject; 
+    GameObject previousIceObject;
 
     private int[] queue = new int[5]; 
     private int[,] iceMap = new int[5, 3];
+
+
+
+    private Dictionary<GameObject, Queue<GameObject>> objectPools;
+    private Dictionary<GameObject, GameObject> poolHolders;
 
     private void Awake()
     {
@@ -37,18 +45,99 @@ public class Scroller : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        SpawnObject(enviromentAssets.bridgeSidePath);
+
+        objectPools = new Dictionary<GameObject, Queue<GameObject>>();
+        poolHolders = new Dictionary<GameObject, GameObject>();
+
+        InitializePool(iceAssets.IceFlat);
+        InitializePool(iceAssets.IceHPiece);
+        InitializePool(iceAssets.IceIPiece);
+        InitializePool(iceAssets.IceLPiece);
+        InitializePool(iceAssets.IceOPiece);
+        InitializePool(iceAssets.IceUPiece);
+        InitializePool(iceAssets.IceCornerPiece);
+        InitializePool(iceAssets.Ice2CornerPiece);
+        InitializePool(iceAssets.Ice2CornerDiagonalPiece);
+        InitializePool(iceAssets.Ice3CornerPiece);
+        InitializePool(iceAssets.Ice4CornerPiece);
+        InitializePool(iceAssets.IceEmptyPiece);
+        InitializePool(iceAssets.IceLWithCornerPiece);
+        InitializePool(iceAssets.IceIWithCornerLeftPiece);
+        InitializePool(iceAssets.IceIWithCornerRightPiece);
+        InitializePool(iceAssets.IceIWith2CornerPiece);
+
+
+        InitializePool(enviromentAssets.bridgeSidePath);
+        InitializePool(enviromentAssets.bridge);
+        InitializePool(enviromentAssets.bridgeClosed);
+        InitializePool(enviromentAssets.bridgeLPieceOpening);
+        InitializePool(enviromentAssets.bridgeOpeningConnector);
+        InitializePool(enviromentAssets.bridgeSingleOpening);
+
+        SpawnEnviroment(enviromentAssets.bridgeSidePath);
+
         SpawnIce();
     }
+
+    void InitializePool(GameObject prefab)
+    {
+        Queue<GameObject> newPool = new Queue<GameObject>();
+        GameObject poolHolder = new GameObject($"{prefab.name} Pool");
+        poolHolder.transform.SetParent(this.transform);
+
+        poolHolders[prefab] = poolHolder;
+
+        for (int i = 0; i < 10; i++)
+        {
+            GameObject newObj = InitializeNewObject(prefab, poolHolder.transform);
+            newObj.SetActive(false);
+            newPool.Enqueue(newObj);
+        }
+
+        objectPools.Add(prefab, newPool);
+    }
+    GameObject InitializeNewObject(GameObject prefab, Transform Holder)
+    {
+        GameObject newObj = Instantiate(prefab, Holder);
+        MovingObject newMoving = newObj.AddComponent<MovingObject>();
+        newMoving.SetScroller(this);
+        newMoving.SetPrefab(prefab);
+        return newObj; 
+    }
+    public GameObject GetPooledObject(GameObject prefab)
+    {
+        if (!objectPools.ContainsKey(prefab) || objectPools[prefab].Count == 0)
+        {
+            GameObject newObj = InitializeNewObject(prefab, poolHolders[prefab].transform);
+            newObj.SetActive(true);
+            return newObj;
+        }
+        else
+        {
+            GameObject objToSpawn = objectPools[prefab].Dequeue();
+            objToSpawn.SetActive(true);
+            return objToSpawn;
+        }
+    }
+
+    public void ReturnObjectToPool(GameObject prefab, GameObject obj)
+    {
+        obj.SetActive(false);
+        objectPools[prefab].Enqueue(obj);
+    }
+
+
+
     void SpawnIce()
     {
         int lane = Random.Range(0, 5);
         int spawn = Random.Range(0, 10);
         if (spawn < 7)
         {
-            if (queue[lane] > 0) return;
+            if (queue[lane] <= 0) { 
             int length = Random.Range(1, 10);
             queue[lane] = length;
+            }
         }
 
 
@@ -73,10 +162,12 @@ public class Scroller : MonoBehaviour
             if (queue[i] > 0) queue[i]--; 
         }
 
-        logIceMap();
+        //logIceMap();
         InstantiateIce();
 
     }
+
+    // DO NOT TRY TO OPTIMIZE THIS, YOU WILL ONLY WASTE YOUR TIME, there are simply too many options 
     void InstantiateIce()
     {
 
@@ -240,11 +331,10 @@ public class Scroller : MonoBehaviour
     }
     void SpawnIceObject(Vector3 position, GameObject iceObject, Quaternion orientation , bool last = false)
     {
-        GameObject newBridge = Instantiate(iceObject, position - Vector3.forward * speed, orientation, this.transform);
-        MovingObject newMoving = newBridge.AddComponent<MovingObject>();
-        newMoving.SetScroller(this);
-        if (last)previousIceObject = newMoving;
-
+        GameObject newIceObject = GetPooledObject(iceObject);
+        newIceObject.transform.position = position - Vector3.forward * speed;
+        newIceObject.transform.rotation = orientation; 
+        if (last)previousIceObject = newIceObject;
     }
 
     void ShiftIceMap()
@@ -269,23 +359,24 @@ public class Scroller : MonoBehaviour
 
 
 
-    void SpawnObject(GameObject prefab,float offset = 0)
+    void SpawnEnviroment(GameObject prefab,float offset = 0)
     {
+
         Vector3 position = previousBridgeObject ? 
             previousBridgeObject.transform.position + 
-            Vector3.forward * previousBridgeObject.gameObject.GetComponent<Renderer>().bounds.size.z/2 +
+            Vector3.forward * previousBridgeObject.GetComponent<Renderer>().bounds.size.z/2 +
             Vector3.forward * prefab.GetComponent<Renderer>().bounds.size.z/2:
 
             Vector3.forward * spawnDistance;
 
-        GameObject newBridge = Instantiate(prefab, position - Vector3.forward * speed, Quaternion.Euler(-90, 0, 0), this.transform);
-        MovingObject newMoving = newBridge.AddComponent<MovingObject>();
-        newMoving.SetScroller(this);
-        previousBridgeObject = newMoving;
+        GameObject newObject = GetPooledObject(prefab);
+        newObject.transform.position = position - Vector3.forward * speed;
+        newObject.transform.rotation = Quaternion.Euler(-90, 0, 0); 
+        previousBridgeObject = newObject;
     }
     void SpawnBridge()
     {
-        SpawnObject(enviromentAssets.bridge);
+        SpawnEnviroment(enviromentAssets.bridge);
         int[] paths = new int[5];
         bool possible = false;
         for (int i = 0; i < paths.Length; i++)
@@ -322,9 +413,9 @@ public class Scroller : MonoBehaviour
     }
     void SpawnBridgeOpening(Vector3 position, GameObject openining, bool flip = false)
     {
-        GameObject newOpening = Instantiate(openining, position, Quaternion.Euler(-90, flip?0:180, 0), this.transform);
-        MovingObject newMoving = newOpening.AddComponent<MovingObject>();
-        newMoving.SetScroller(this);
+        GameObject newObject = GetPooledObject(openining);
+        newObject.transform.position = position;
+        newObject.transform.rotation = Quaternion.Euler(-90, flip ? 0 : 180, 0); 
     }
 
     // Update is called once per frame
@@ -338,8 +429,8 @@ public class Scroller : MonoBehaviour
         if (spawnDistance - previousBridgeObject.transform.position.z > 0)
         {
             int random = Random.Range(0, 10);
-/*            if (random < 2) SpawnBridge();
-            else */SpawnObject(enviromentAssets.bridgeSidePath); 
+            if (random < 2) SpawnBridge();
+            else SpawnEnviroment(enviromentAssets.bridgeSidePath); 
         }
 
         if(spawnDistance - previousIceObject.transform.position.z > 0)
@@ -364,8 +455,6 @@ public class Scroller : MonoBehaviour
                 return Quaternion.identity;
         }
     }
-
-
 }
 
 [Serializable]
@@ -398,11 +487,6 @@ public class IceAssets
     public GameObject IceIWithCornerLeftPiece;
     public GameObject IceIWithCornerRightPiece;
     public GameObject IceIWith2CornerPiece;
-    public GameObject IceIslandCornerPiece;
-    public GameObject IceSingleDeadEndPathPiece;
-    public GameObject IceSinglePathPiece;
-    public GameObject IceStrandedPiece;
-    public GameObject IceTurnPathPiece;
 }
 
 

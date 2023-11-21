@@ -5,11 +5,17 @@ using UnityEngine;
 public class MovingObject : MonoBehaviour
 {
 
-    private Scroller scroller; 
+    private Scroller scroller;
+    private GameObject prefab;
+
 
     public void SetScroller(Scroller pScroller)
     {
         scroller = pScroller;
+    }
+    public void SetPrefab(GameObject pPrefab)
+    {
+        prefab = pPrefab; 
     }
     // Start is called before the first frame update
     void Start()
@@ -23,6 +29,11 @@ public class MovingObject : MonoBehaviour
         if (scroller)
         {
             this.transform.position -= Vector3.forward * scroller.speed;
+        }
+
+        if(transform.position.z < -scroller.despawnDistance)
+        {
+            scroller.ReturnObjectToPool(prefab, this.gameObject); 
         }
     }
 
