@@ -161,6 +161,7 @@
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\PoseDetectionDemo\Scripts\DynamicPoseDetector.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectDemos\RecorderDemo\Scripts\PlayerDetectorController.cs" />
     <Compile Include="Assets\MatiasStuff\Scripts\TranslateObject.cs" />
+    <Compile Include="Assets\Scripts\Timer.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectScripts\BackgroundStaticImage.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectScripts\Interfaces\Kinect4AzureSyncher.cs" />
     <Compile Include="Assets\Other\AzureKinectExamples\KinectScripts\PointCloudTarget.cs" />
