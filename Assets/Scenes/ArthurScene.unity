@@ -969,13 +969,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 684776676}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.12152286, y: 0, z: 0, w: 0.99258864}
-  m_LocalPosition: {x: 0, y: 2.04, z: -7.56}
+  m_LocalRotation: {x: 0.1785101, y: -0, z: -0, w: 0.9839381}
+  m_LocalPosition: {x: 0, y: 2.94, z: -8.47}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 13.96, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 20.566, y: 0, z: 0}
 --- !u!1 &762327272 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100106, guid: ae23d50304c93b9418b65cec8f9fe954,
@@ -1030,7 +1030,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: 0
-  mirroredMovement: 1
+  mirroredMovement: 0
   verticalMovement: 1
   horizontalMovement: 1
   externalRootMotion: 1
@@ -1305,6 +1305,117 @@ RectTransform:
   m_AnchoredPosition: {x: 5, y: -10}
   m_SizeDelta: {x: -10, y: 30}
   m_Pivot: {x: 0.5, y: 1}
+--- !u!1 &976119606
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 976119608}
+  - component: {fileID: 976119607}
+  m_Layer: 0
+  m_Name: LevelManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &976119607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 976119606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e2046b00a223df4ea64e20d42e563d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scroller: {fileID: 1438923500}
+  levelSections:
+  - duration: 50
+    tutorialMode: 0
+    singleLaneMode: 1
+    maxLaneChange: 2
+    laneChangeGap: 0
+    laneChangeFrequency: 0.68
+    bridgeSpawnRate: 0
+    obstacleSpawnRate: 0
+    obstacleOptions:
+      Jump: 0
+      RightLeg: 0
+      LeftLeg: 0
+    speed: 0.27
+  - duration: 100
+    tutorialMode: 0
+    singleLaneMode: 0
+    maxLaneChange: 2
+    laneChangeGap: 1
+    laneChangeFrequency: 0.84
+    bridgeSpawnRate: 0
+    obstacleSpawnRate: 10
+    obstacleOptions:
+      Jump: 1
+      RightLeg: 1
+      LeftLeg: 1
+    speed: 0.57
+  - duration: 100
+    tutorialMode: 0
+    singleLaneMode: 1
+    maxLaneChange: 2
+    laneChangeGap: 1
+    laneChangeFrequency: 0.84
+    bridgeSpawnRate: 10
+    obstacleSpawnRate: 0
+    obstacleOptions:
+      Jump: 0
+      RightLeg: 0
+      LeftLeg: 0
+    speed: 0.73
+  - duration: 100
+    tutorialMode: 0
+    singleLaneMode: 1
+    maxLaneChange: 2
+    laneChangeGap: 1
+    laneChangeFrequency: 0.84
+    bridgeSpawnRate: 3
+    obstacleSpawnRate: 5
+    obstacleOptions:
+      Jump: 1
+      RightLeg: 1
+      LeftLeg: 1
+    speed: 0.97
+  - duration: 50
+    tutorialMode: 0
+    singleLaneMode: 1
+    maxLaneChange: 2
+    laneChangeGap: 1
+    laneChangeFrequency: 0.84
+    bridgeSpawnRate: 3
+    obstacleSpawnRate: 5
+    obstacleOptions:
+      Jump: 1
+      RightLeg: 1
+      LeftLeg: 1
+    speed: 0.17
+--- !u!4 &976119608
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 976119606}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.16180919, y: 1.4540393, z: -4.400544}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &992224143 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100154, guid: ae23d50304c93b9418b65cec8f9fe954,
@@ -1517,11 +1628,17 @@ MonoBehaviour:
     IceDebris: {fileID: 919132149155446097, guid: 5e315170e607cd240bedfa36ceba550f,
       type: 3}
     Sledge: {fileID: 919132149155446097, guid: fa9fe893ee86aef4f8a4f1db5b52eb9c, type: 3}
-  singleLaneMode: 1
+  tutorialMode: 0
+  singleLaneMode: 0
   maxLaneChange: 1
   laneChangeGap: 1
   laneChangeFrequency: 1
   bridgeSpawnRate: 0
+  obstacleSpawnRate: 2
+  obstacleOptions:
+    Jump: 0
+    RightLeg: 0
+    LeftLeg: 0
   speed: 0.1
   spawnDistance: 100
   despawnDistance: 50
@@ -1988,6 +2105,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1913164051}
   - component: {fileID: 1913164052}
+  - component: {fileID: 1913164053}
   m_Layer: 5
   m_Name: TestSlider
   m_TagString: Untagged
@@ -2072,6 +2190,20 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1913164053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1913164050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adc7d9ce212db564b8ea7fdd88935368, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  avatarController: {fileID: 783499016}
+  sliderFloat: {fileID: 1913164052}
 --- !u!1 &1928890808
 GameObject:
   m_ObjectHideFlags: 0
@@ -2155,6 +2287,53 @@ MonoBehaviour:
   bodyTrackingSensorOrientation: 0
   bodyTrackingProcessingMode: 2
   detectFloorForPoseEstimation: 1
+--- !u!1 &1975274618
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1975274620}
+  - component: {fileID: 1975274619}
+  m_Layer: 0
+  m_Name: TimeManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1975274619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1975274618}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c280e8fc0d8dee45bce1cf249b88ad7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _exerciseDuration: 9999
+  _exerciseBreakTime: 10
+  _exerciseBreakDuration: 0
+--- !u!4 &1975274620
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1975274618}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.16180919, y: 1.4540393, z: -4.400544}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2132546391
 GameObject:
   m_ObjectHideFlags: 0
@@ -2286,6 +2465,8 @@ SceneRoots:
   - {fileID: 684776680}
   - {fileID: 232448799}
   - {fileID: 1438923501}
+  - {fileID: 976119608}
   - {fileID: 935101923}
   - {fileID: 2132832767}
   - {fileID: 295984846}
+  - {fileID: 1975274620}

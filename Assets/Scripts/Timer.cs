@@ -39,7 +39,7 @@ public class Timer : MonoBehaviour
         Debug.Log("Stop break!");
 
         StartCoroutine(ExerciseBreakStart());
-        OnExeciseRest?.Invoke(true);
+        OnExeciseRest?.Invoke(false);
     }
     // Start is called before the first frame update
     void Start()

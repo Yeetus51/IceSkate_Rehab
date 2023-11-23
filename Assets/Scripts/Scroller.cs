@@ -7,6 +7,8 @@ using Random = UnityEngine.Random;
 public class Scroller : MonoBehaviour
 {
 
+    
+
     private List<TranslateObject> _planes = new List<TranslateObject>();
 
     [SerializeField]
@@ -16,8 +18,10 @@ public class Scroller : MonoBehaviour
     private IceAssets iceAssets;
 
     [SerializeField]
-    private ObstacleAssets obstacleAssets; 
+    private ObstacleAssets obstacleAssets;
 
+
+    [SerializeField] private bool tutorialMode = false; 
     [SerializeField] private bool singleLaneMode = false;
 
     [Range(1, 3)]
@@ -30,10 +34,16 @@ public class Scroller : MonoBehaviour
     [SerializeField] private float laneChangeFrequency = 1;
 
     [Range(0, 10)]
-    [SerializeField] private int bridgeSpawnRate = 2; 
+    [SerializeField] private int bridgeSpawnRate = 2;
+
+    [Range(0, 10)]
+    [SerializeField] private int obstacleSpawnRate = 2;
+
+    [SerializeField]
+    private ObstacleOptions obstacleOptions; 
 
     [Space(30f)]
-    [Range(0.1f,5)]
+    [Range(0.01f,5)]
     [SerializeField] public float speed = 0.1f;
 
     [Range(10, 100)]
@@ -56,6 +66,7 @@ public class Scroller : MonoBehaviour
     private int changeOpenLaneIn = 5;
 
     private int spawnIceCallCount; 
+    private int spawnIceCallCountSection; 
 /*    private bool spawningExtraIce;
     bool once = false; */
 
@@ -63,6 +74,30 @@ public class Scroller : MonoBehaviour
 
     private Dictionary<GameObject, Queue<GameObject>> objectPools;
     private Dictionary<GameObject, GameObject> poolHolders;
+
+    public void SetLevels(List<LevelSection> sections){
+
+        if(sections.Count > 0){
+            SetLevelSection(sections, 0); 
+        } 
+    }
+    void SetLevelSection(List<LevelSection> sections, int index){
+        LevelSection section = sections[index]; 
+        index++; 
+
+        tutorialMode = section.tutorialMode; 
+        singleLaneMode = section.singleLaneMode; 
+        maxLaneChange = section.maxLaneChange;
+        laneChangeGap = section.laneChangeGap; 
+        laneChangeFrequency = section.laneChangeFrequency; 
+        bridgeSpawnRate = section.bridgeSpawnRate; 
+        obstacleOptions = section.obstacleOptions; 
+        speed = section.speed; 
+
+        if(index < sections.Count){
+            StartCoroutine(WaitForIceSections(sections[index-1].duration,() => SetLevelSection(sections, index))); 
+        }
+    }
 
     private void Awake()
     {
@@ -72,6 +107,8 @@ public class Scroller : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
+        //Timer.OnExeciseRest += Break; 
 
         objectPools = new Dictionary<GameObject, Queue<GameObject>>();
         poolHolders = new Dictionary<GameObject, GameObject>();
@@ -164,8 +201,11 @@ public class Scroller : MonoBehaviour
     {
         bool laneChanged = false;
         int previousLane = -1; 
+
         if (changeOpenLaneIn <= 0 && holeGenerationPause <= 0)
         {
+            Debug.Log(alwaysOpenLane); 
+            Debug.Log(holeGenerationPause);
             previousLane = alwaysOpenLane; 
             changeOpenLaneIn = Random.Range((int)(5 * (1/laneChangeFrequency)), (int)(15 * 1/laneChangeFrequency));
             alwaysOpenLane = Random.Range(Mathf.Clamp(alwaysOpenLane - maxLaneChange, 0,5), Mathf.Clamp(alwaysOpenLane + maxLaneChange +1, 0, 5));
@@ -239,6 +279,7 @@ public class Scroller : MonoBehaviour
         changeOpenLaneIn--;
 
         spawnIceCallCount--; 
+        spawnIceCallCountSection--; 
 
 
 /*        if (spawnDistance - previousIceObject.transform.position.z > 3)
@@ -254,10 +295,26 @@ public class Scroller : MonoBehaviour
         }*/
     }
 
+    private void Break(bool pBreak)
+    {
+        if (pBreak) holeGenerationPause = 1000;
+        else holeGenerationPause = 0;
+
+        Debug.Log("Valeu: " + holeGenerationPause + pBreak);
+    }
+
     private void QueueObstacles(int freeSpace)
     {
-        int type = Random.Range(0, 3);
+        List<int> options = obstacleOptions.GetOptionAmount(); 
+        int spawn = Random.Range(0, 10);
+        if (spawn >= obstacleSpawnRate || options.Count <= 0) return;
+
+        int type = Random.Range(0, options.Count);
+        type = options[type]; 
+
         int startPosition = Random.Range(3, freeSpace);
+
+
 
         int amount = Random.Range(1, freeSpace - startPosition); 
         switch (type)
@@ -287,6 +344,14 @@ public class Scroller : MonoBehaviour
         yield return new WaitUntil(() => spawnIceCallCount <= 0);
 
         if(holeGenerationPause == 0)method?.Invoke(); 
+    }
+
+    IEnumerator WaitForIceSections(int numberOfCalls, Action method)
+    {
+        spawnIceCallCountSection = numberOfCalls; 
+        yield return new WaitUntil(() => spawnIceCallCountSection <= 0);
+
+        method?.Invoke(); 
     }
     void SpawnSingleObstacle(GameObject prefab, int lane, Quaternion orientation)
     {
@@ -680,7 +745,23 @@ public class ObstacleAssets
     public GameObject OrangeCone;
     public GameObject IceDebris;
     public GameObject Sledge;
-    
+}
+
+[Serializable]
+public class ObstacleOptions
+{
+    public bool Jump;
+    public bool RightLeg;
+    public bool LeftLeg; 
+
+    public List<int> GetOptionAmount()
+    {
+        List<int> options = new List<int>();
+        if (Jump) options.Add(0); 
+        if (RightLeg) options.Add(1);
+        if (LeftLeg) options.Add(2);
+        return options; 
+    }
 }
 
 

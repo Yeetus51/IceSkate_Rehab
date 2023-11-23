@@ -18,7 +18,6 @@ public class LaneIndecatorScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(avatarController.GetPlayerXPos()); 
 
         sliderFloat.value = avatarController.GetPlayerXPos() / 2 + 0.5f ;
     }
