@@ -8,7 +8,7 @@ using com.rfilkov.components;
 public class LaneIndecatorScript : MonoBehaviour
 {
     [SerializeField] AvatarController avatarController;
-    Slider sliderFloat;
+    [SerializeField] Slider sliderFloat;
     // Start is called before the first frame update
     void Start()
     {
@@ -18,6 +18,8 @@ public class LaneIndecatorScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        sliderFloat.value = avatarController.GetPlayerXPos() / 5 + 0.5f ;
+        Debug.Log(avatarController.GetPlayerXPos()); 
+
+        sliderFloat.value = avatarController.GetPlayerXPos() / 2 + 0.5f ;
     }
 }
