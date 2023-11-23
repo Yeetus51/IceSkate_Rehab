@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5259998373170920155}
   m_Layer: 0
-  m_Name: OrangeTrafficCone
+  m_Name: OrangeTrafficCone 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -129,8 +129,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.02, y: 0.02, z: 0.01}
-  m_Center: {x: 0, y: 0, z: 0.005}
+  m_Size: {x: 0.02, y: 0.04020293, z: 0.009999999}
+  m_Center: {x: -0.0007415771, y: -0.02998407, z: 0.005000001}
 --- !u!4 &2985677747363302254 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 22abd3ce61c4c69448e692e3172578eb,

@@ -1337,11 +1337,11 @@ MonoBehaviour:
   scroller: {fileID: 1438923500}
   levelSections:
   - duration: 50
-    tutorialMode: 0
+    tutorialMode: 1
     singleLaneMode: 1
-    maxLaneChange: 2
+    maxLaneChange: 1
     laneChangeGap: 0
-    laneChangeFrequency: 0.68
+    laneChangeFrequency: 0.5
     bridgeSpawnRate: 0
     obstacleSpawnRate: 0
     obstacleOptions:
@@ -1349,58 +1349,32 @@ MonoBehaviour:
       RightLeg: 0
       LeftLeg: 0
     speed: 0.27
-  - duration: 100
-    tutorialMode: 0
-    singleLaneMode: 0
-    maxLaneChange: 2
-    laneChangeGap: 1
-    laneChangeFrequency: 0.84
+  - duration: 50
+    tutorialMode: 1
+    singleLaneMode: 1
+    maxLaneChange: 1
+    laneChangeGap: 0
+    laneChangeFrequency: 0.5
+    bridgeSpawnRate: 0
+    obstacleSpawnRate: 10
+    obstacleOptions:
+      Jump: 0
+      RightLeg: 1
+      LeftLeg: 1
+    speed: 0.27
+  - duration: 50
+    tutorialMode: 1
+    singleLaneMode: 1
+    maxLaneChange: 1
+    laneChangeGap: 0
+    laneChangeFrequency: 0.5
     bridgeSpawnRate: 0
     obstacleSpawnRate: 10
     obstacleOptions:
       Jump: 1
       RightLeg: 1
       LeftLeg: 1
-    speed: 0.57
-  - duration: 100
-    tutorialMode: 0
-    singleLaneMode: 1
-    maxLaneChange: 2
-    laneChangeGap: 1
-    laneChangeFrequency: 0.84
-    bridgeSpawnRate: 10
-    obstacleSpawnRate: 0
-    obstacleOptions:
-      Jump: 0
-      RightLeg: 0
-      LeftLeg: 0
-    speed: 0.73
-  - duration: 100
-    tutorialMode: 0
-    singleLaneMode: 1
-    maxLaneChange: 2
-    laneChangeGap: 1
-    laneChangeFrequency: 0.84
-    bridgeSpawnRate: 3
-    obstacleSpawnRate: 5
-    obstacleOptions:
-      Jump: 1
-      RightLeg: 1
-      LeftLeg: 1
-    speed: 0.97
-  - duration: 50
-    tutorialMode: 0
-    singleLaneMode: 1
-    maxLaneChange: 2
-    laneChangeGap: 1
-    laneChangeFrequency: 0.84
-    bridgeSpawnRate: 3
-    obstacleSpawnRate: 5
-    obstacleOptions:
-      Jump: 1
-      RightLeg: 1
-      LeftLeg: 1
-    speed: 0.17
+    speed: 0.27
 --- !u!4 &976119608
 Transform:
   m_ObjectHideFlags: 0
