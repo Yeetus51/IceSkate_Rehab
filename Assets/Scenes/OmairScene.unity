@@ -1102,6 +1102,17 @@ MonoBehaviour:
       type: 3}
     IceIWith2CornerPiece: {fileID: 919132149155446097, guid: 1fd48e4a53fc7c14cacf0e120c02c3dd,
       type: 3}
+  obstacleAssets:
+    OrangeCone: {fileID: 919132149155446097, guid: 22abd3ce61c4c69448e692e3172578eb,
+      type: 3}
+    IceDebris: {fileID: 919132149155446097, guid: 5e315170e607cd240bedfa36ceba550f,
+      type: 3}
+    Sledge: {fileID: 919132149155446097, guid: fa9fe893ee86aef4f8a4f1db5b52eb9c, type: 3}
+  singleLaneMode: 1
+  maxLaneChange: 1
+  laneChangeGap: 1
+  laneChangeFrequency: 1
+  bridgeSpawnRate: 0
   speed: 0.1
   spawnDistance: 100
   despawnDistance: 50
