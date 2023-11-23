@@ -91,7 +91,8 @@ public class Scroller : MonoBehaviour
         laneChangeGap = section.laneChangeGap; 
         laneChangeFrequency = section.laneChangeFrequency; 
         bridgeSpawnRate = section.bridgeSpawnRate; 
-        obstacleOptions = section.obstacleOptions; 
+        obstacleOptions = section.obstacleOptions;
+        obstacleSpawnRate = section.obstacleSpawnRate; 
         speed = section.speed; 
 
         if(index < sections.Count){
