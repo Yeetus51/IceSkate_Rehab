@@ -15,10 +15,16 @@ public class Scroller : MonoBehaviour
     [SerializeField]
     private IceAssets iceAssets;
 
+    [SerializeField]
+    private ObstacleAssets obstacleAssets; 
+
     [SerializeField] private bool singleLaneMode = false;
 
     [Range(1, 3)]
     [SerializeField] public int maxLaneChange = 1;
+
+    [Range(0, 3)]
+    [SerializeField] public int laneChangeGap = 1;
 
     [Range(0.5f, 3)]
     [SerializeField] private float laneChangeFrequency = 1;
@@ -42,13 +48,14 @@ public class Scroller : MonoBehaviour
     GameObject previousIceObject;
 
     private int[] queue = new int[5];
-    private int[] feasibility = new int[5]; 
     private int[,] iceMap = new int[5, 3];
 
     private int holeGenerationPause = 0;
 
     private int alwaysOpenLane = 2;
-    private int changeOpenLane = 5; 
+    private int changeOpenLaneIn = 5;
+
+    private int spawnIceCallCount; 
 /*    private bool spawningExtraIce;
     bool once = false; */
 
@@ -93,6 +100,11 @@ public class Scroller : MonoBehaviour
         InitializePool(enviromentAssets.bridgeLPieceOpening);
         InitializePool(enviromentAssets.bridgeOpeningConnector);
         InitializePool(enviromentAssets.bridgeSingleOpening);
+
+        InitializePool(obstacleAssets.IceDebris);
+        InitializePool(obstacleAssets.OrangeCone);
+        InitializePool(obstacleAssets.Sledge);
+
 
         SpawnEnviroment(enviromentAssets.bridgeSidePath);
 
@@ -150,41 +162,72 @@ public class Scroller : MonoBehaviour
 
     void SpawnIce()
     {
-        if(changeOpenLane <= 0 && holeGenerationPause <= 0)
+        bool laneChanged = false;
+        int previousLane = -1; 
+        if (changeOpenLaneIn <= 0 && holeGenerationPause <= 0)
         {
-            int previousLane = alwaysOpenLane; 
-            changeOpenLane = Random.Range((int)(5 * (1/laneChangeFrequency)), (int)(15 * 1/laneChangeFrequency));
-            alwaysOpenLane = Random.Range(Mathf.Clamp(alwaysOpenLane - maxLaneChange, 0,4), Mathf.Clamp(alwaysOpenLane + maxLaneChange +1, 0, 4));
-            Debug.Log(alwaysOpenLane);
+            previousLane = alwaysOpenLane; 
+            changeOpenLaneIn = Random.Range((int)(5 * (1/laneChangeFrequency)), (int)(15 * 1/laneChangeFrequency));
+            alwaysOpenLane = Random.Range(Mathf.Clamp(alwaysOpenLane - maxLaneChange, 0,5), Mathf.Clamp(alwaysOpenLane + maxLaneChange +1, 0, 5));
 
-            holeGenerationPause += maxLaneChange -1;
+            changeOpenLaneIn += laneChangeGap;
+
+            holeGenerationPause = laneChangeGap > 1? laneChangeGap: 0;
+
+            laneChangeGap = laneChangeGap == 0 ? Mathf.Abs(previousLane - alwaysOpenLane) > 1 ? 1 : laneChangeGap : laneChangeGap; 
+
+            laneChanged = true;
+            // logIceMap();
+
 
             for (int i = 0; i < 5; i++)
             {
                 queue[i] = 0;
+            }
+
+            if (changeOpenLaneIn > 5 )
+            {
+                QueueObstacles(changeOpenLaneIn);
             }
         }
 
 
         int lane = Random.Range(0, 5);
         int spawn = Random.Range(0, 10);
+        int length = Random.Range(1, 7);
 
         if (singleLaneMode)
         {
-            int length = Random.Range(1, 7);
-            if (0 != alwaysOpenLane && queue[0] <= 0) queue[0] = length;
-            if (1 != alwaysOpenLane && queue[1] <= 0) queue[1] = length;
-            if (2 != alwaysOpenLane && queue[2] <= 0) queue[2] = length;
-            if (3 != alwaysOpenLane && queue[3] <= 0) queue[3] = length;
-            if (4 != alwaysOpenLane && queue[4] <= 0) queue[4] = length;
+            for (int i = 0; i < 5; i++)
+            {
+                if (laneChanged && laneChangeGap != 0)
+                {
+                    int small = previousLane;
+                    int big = alwaysOpenLane;
+                    if (previousLane > alwaysOpenLane)
+                    {
+                        small = alwaysOpenLane;
+                        big = previousLane;
+                    }
+
+                    if (i >= small && i <= big)
+                    {
+                        continue;
+                    }
+                }
+                if (i != alwaysOpenLane && queue[i] <= 0) queue[i] = changeOpenLaneIn;
+            }
         }
         else
         {
-            if (spawn < 7 && lane != alwaysOpenLane)
+            if (spawn < 7 && lane != alwaysOpenLane )
             {
+                if (laneChanged)
+                {
+
+                }
                 if (queue[lane] <= 0)
                 {
-                    int length = Random.Range(1, 7);
                     queue[lane] = length;
                 }
             }
@@ -193,7 +236,9 @@ public class Scroller : MonoBehaviour
 
 
         IncrementIce();
-        changeOpenLane--; 
+        changeOpenLaneIn--;
+
+        spawnIceCallCount--; 
 
 
 /*        if (spawnDistance - previousIceObject.transform.position.z > 3)
@@ -208,6 +253,66 @@ public class Scroller : MonoBehaviour
             }
         }*/
     }
+
+    private void QueueObstacles(int freeSpace)
+    {
+        int type = Random.Range(0, 3);
+        int startPosition = Random.Range(2, freeSpace);
+
+        int amount = Random.Range(1, freeSpace - startPosition); 
+        switch (type)
+        {
+            case (int)ObstacleType.Jump:
+                int rand = Random.Range(0, 2);
+                if (rand == 0)
+                {
+                    StartCoroutine(WaitForIce(startPosition, () => SpawnSingleObstacle(obstacleAssets.IceDebris, alwaysOpenLane, GetRot(Rot.TopRight))));
+                }
+                else
+                {
+                    StartCoroutine(WaitForIce(startPosition, () => SpawnSingleObstacle(obstacleAssets.Sledge, alwaysOpenLane, GetRot(Rot.TopRight))));
+                }
+                break;
+            case (int)ObstacleType.LeftLegUp:
+                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.BottomLeft))));
+                break;
+            case (int)ObstacleType.RightLegUp:
+                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.TopRight))));
+                break;
+        }
+    }
+    IEnumerator WaitForIce(int numberOfCalls, Action method)
+    {
+        spawnIceCallCount = numberOfCalls; 
+        yield return new WaitUntil(() => spawnIceCallCount <= 0);
+
+        if(holeGenerationPause == 0)method?.Invoke(); 
+    }
+    void SpawnSingleObstacle(GameObject prefab, int lane, Quaternion orientation)
+    {
+        GameObject newObject = GetPooledObject(prefab);
+
+        Vector3 position = Vector3.forward * previousIceObject.transform.position.z  + Vector3.forward *2 - Vector3.forward * speed + Vector3.right * (lane-2) * 2;
+
+        newObject.transform.position = position;
+        newObject.transform.rotation = orientation; 
+    }
+
+    void SpawnMultipleObstacles(GameObject prefab, int amount, int lane, Quaternion orientation)
+    {
+        if (amount == 0) return; 
+
+        GameObject newObject = GetPooledObject(prefab);
+        Vector3 position = Vector3.forward * previousIceObject.transform.position.z + Vector3.forward * 2 - Vector3.forward * speed + Vector3.right * (lane - 2) * 2;
+        newObject.transform.position = position;
+        newObject.transform.rotation = orientation;
+
+        StartCoroutine(WaitForIce(1, () => SpawnMultipleObstacles(prefab, amount - 1,lane, orientation)));
+
+    }
+
+
+
     void IncrementIce()
     {
         ShiftIceMap();
@@ -223,80 +328,8 @@ public class Scroller : MonoBehaviour
         if(holeGenerationPause > 0)holeGenerationPause--;
 
         //logIceMap();
-        //CheckFeasibility();
         InstantiateIce();
     }
-    bool CheckFeasibility()
-    {
-        for (int i = 0; i < feasibility.Length; i++)
-        {
-            if(iceMap[i, 0] == 1)
-            {
-                feasibility[i] = 1; 
-            }
-            int inital = -1; 
-            int previous = -1; 
-            for (int j = 0; j < 5; j++)
-            {
-                if (feasibility[j] == 1)
-                {
-                    if (previous == -1) inital = j; 
-                    previous = j;
-                    continue;
-                }
-
-
-                if (j == 4 || previous + 1 == j && feasibility[j] != 1)
-                {
-                    // ended 
-                    bool empty = true;
-                    if (inital >= 0 && previous >= 0)
-                    {
-                        for (int k = inital; k < previous + 1; k++)
-                        {
-                            if (iceMap[k, 0] == 1) empty = false;
-                        }
-                    }
-                    if (empty && inital >= 0 && previous >= 0)
-                    {
-                        for (int k = inital; k < previous + 1; k++)
-                        {
-                            feasibility[k] = 0;
-                        }
-                    }
-                }
-                else if (feasibility[0] == 1 && iceMap[0, 0] == 0) feasibility[0] = 0;
-                else if (feasibility[4] == 1 && iceMap[0, 0] == 0) feasibility[4] = 0;
-            }   
-        }
-        string shit = $"[{feasibility[0]},{feasibility[1]},{feasibility[2]},{feasibility[3]},{feasibility[4]}]";
-        //Debug.Log(shit);
-        bool gonnaKill = true;
-        foreach (var item in feasibility)
-        {
-            if (item == 0)
-            {
-                gonnaKill = false;
-                break;
-            }
-        }
-        if (gonnaKill)
-        {
-            for (int i = 0; i < 5; i++)
-            {
-                queue[i] = 0;
-                iceMap[i, 0] = 0;
-                feasibility[i] = 0;
-
-            }
-            holeGenerationPause += 3;
-            Debug.LogWarning("Was gonna kill!");
-            Debug.LogError("stop");
-            return false;
-        }
-        return true; 
-    }
-
     // DO NOT TRY TO OPTIMIZE THIS, YOU WILL ONLY WASTE YOUR TIME, there are simply too many options 
     void InstantiateIce()
     {
@@ -461,7 +494,7 @@ public class Scroller : MonoBehaviour
     void SpawnIceObject(Vector3 position, GameObject iceObject, Quaternion orientation , bool last = false)
     {
         GameObject newIceObject = GetPooledObject(iceObject);
-        newIceObject.transform.position = position - Vector3.forward * speed;
+        newIceObject.transform.position = position - Vector3.forward * speed ;
 /*        if (spawningExtraIce)
         {
             newIceObject.transform.position = position - Vector3.forward * speed + Vector3.forward;
@@ -641,6 +674,15 @@ public class IceAssets
     public GameObject IceIWith2CornerPiece;
 }
 
+[Serializable]
+public class ObstacleAssets
+{
+    public GameObject OrangeCone;
+    public GameObject IceDebris;
+    public GameObject Sledge;
+    
+}
+
 
 public enum Rot
 {
@@ -648,4 +690,11 @@ public enum Rot
     TopRight,
     BottomLeft,
     BottomRight
+}
+
+public enum ObstacleType
+{
+    Jump = 0,
+    RightLegUp = 1,
+    LeftLegUp = 2
 }
