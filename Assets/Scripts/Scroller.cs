@@ -257,7 +257,7 @@ public class Scroller : MonoBehaviour
     private void QueueObstacles(int freeSpace)
     {
         int type = Random.Range(0, 3);
-        int startPosition = Random.Range(2, freeSpace);
+        int startPosition = Random.Range(3, freeSpace);
 
         int amount = Random.Range(1, freeSpace - startPosition); 
         switch (type)
