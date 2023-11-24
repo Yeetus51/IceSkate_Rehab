@@ -205,8 +205,8 @@ public class Scroller : MonoBehaviour
 
         if (changeOpenLaneIn <= 0 && holeGenerationPause <= 0)
         {
-            Debug.Log(alwaysOpenLane); 
-            Debug.Log(holeGenerationPause);
+            // Debug.Log(alwaysOpenLane); 
+            // Debug.Log(holeGenerationPause);
             previousLane = alwaysOpenLane; 
             changeOpenLaneIn = Random.Range((int)(5 * (1/laneChangeFrequency)), (int)(15 * 1/laneChangeFrequency));
             alwaysOpenLane = Random.Range(Mathf.Clamp(alwaysOpenLane - maxLaneChange, 0,5), Mathf.Clamp(alwaysOpenLane + maxLaneChange +1, 0, 5));
@@ -301,7 +301,7 @@ public class Scroller : MonoBehaviour
         if (pBreak) holeGenerationPause = 1000;
         else holeGenerationPause = 0;
 
-        Debug.Log("Valeu: " + holeGenerationPause + pBreak);
+        // Debug.Log("Valeu: " + holeGenerationPause + pBreak);
     }
 
     private void QueueObstacles(int freeSpace)
