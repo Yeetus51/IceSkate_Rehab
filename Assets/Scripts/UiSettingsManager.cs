@@ -26,6 +26,7 @@ public class UiSettingsManager : MonoBehaviour
     [SerializeField] Slider obstacleSpawnRate; 
     [SerializeField] Slider speed;
     [SerializeField] Button deleteButton; 
+    [SerializeField] Button skipButton; 
     [SerializeField] TMP_Text totalDurationText; 
 
 
@@ -48,6 +49,7 @@ public class UiSettingsManager : MonoBehaviour
 
 
     private LevelSection activeLevelSection;
+    private LevelSection currentPlayingSection = null;
 
     private Button addButton; 
 
@@ -84,7 +86,7 @@ public class UiSettingsManager : MonoBehaviour
         laneChangeRate.onValueChanged.AddListener(delegate{laneChangeRate.value = ValidateAndSetSliderValue(ref activeLevelSection.laneChangeFrequency,laneChangeRate.value,0.5f,2,0.1f);PresetChanged();});
         bridgeSpawnRate.onValueChanged.AddListener(delegate{bridgeSpawnRate.value = ValidateAndSetSliderValue(ref activeLevelSection.bridgeSpawnRate,bridgeSpawnRate.value,0,10,1);PresetChanged();});
         obstacleSpawnRate.onValueChanged.AddListener(delegate{obstacleSpawnRate.value = ValidateAndSetSliderValue(ref activeLevelSection.obstacleSpawnRate,obstacleSpawnRate.value,0,10,1);PresetChanged();});
-        speed.onValueChanged.AddListener(delegate{speed.value = ValidateAndSetSliderValue(ref activeLevelSection.speed,speed.value,0.05f,0.2f,0.025f);PresetChanged();});
+        speed.onValueChanged.AddListener(delegate{speed.value = ValidateAndSetSliderValue(ref activeLevelSection.speed,speed.value,0.05f,0.3f,0.025f);PresetChanged();});
         InvokeTutorialPreset(); 
     }
     private void InstantiateAddButton(){
@@ -132,7 +134,7 @@ public class UiSettingsManager : MonoBehaviour
         timeInSeconds += seconds; 
 
 
-        activeLevelSection.distance = (int)(timeInSeconds * activeLevelSection.speed * 50 /tileLengthFactor); 
+        activeLevelSection.distance = Mathf.RoundToInt(timeInSeconds * activeLevelSection.speed * 50 /tileLengthFactor); 
 
         FactorTimeText(durationMinutes, durationSeconds, timeInSeconds);
     }
@@ -144,7 +146,7 @@ public class UiSettingsManager : MonoBehaviour
         int seconds = ValidateNumaricalInput(breakSeconds.text); 
         timeInSeconds += seconds; 
 
-        activeLevelSection.breakDistance = (int)(timeInSeconds * activeLevelSection.speed * 50 /tileLengthFactor); 
+        activeLevelSection.breakDistance = Mathf.RoundToInt(timeInSeconds * activeLevelSection.speed * 50 /tileLengthFactor); 
 
         FactorTimeText(breakMinutes, breakSeconds, timeInSeconds);
     }
@@ -188,6 +190,9 @@ public class UiSettingsManager : MonoBehaviour
         uiLevelSections.Add(newLevelSection, uiLevelSection); 
 
         InvokeSectionSettings(newLevelSection); 
+        if(currentPlayingSection != null){
+            levelManager.AddSection(activeLevelSection); 
+        }
 
         if(uiLevelSections.Count > 1 && !deleteButton.interactable) deleteButton.interactable = true; 
         CheckSectionLimit();
@@ -214,6 +219,8 @@ public class UiSettingsManager : MonoBehaviour
         string sectionTitle = uiLevelSections[activeLevelSection].GetTitle();
 
         UpdateSectionToggles();
+        CheckSkipButton();
+
 
         int breakInSeconds = GetDistanceInSeconds(activeLevelSection,activeLevelSection.breakDistance); 
         FactorTimeText(breakMinutes, breakSeconds, breakInSeconds);
@@ -237,9 +244,20 @@ public class UiSettingsManager : MonoBehaviour
         SetSliderValue(laneChangeRate, activeLevelSection.laneChangeFrequency,0.5f,2); 
         SetSliderValue(bridgeSpawnRate, activeLevelSection.bridgeSpawnRate,0,10); 
         SetSliderValue(obstacleSpawnRate, activeLevelSection.obstacleSpawnRate,0,10); 
-        SetSliderValue(speed, activeLevelSection.speed,0.05f,0.2f); 
+        SetSliderValue(speed, activeLevelSection.speed,0.05f,0.3f); 
 
         uiLevelSections[activeLevelSection].SetSectionText(sectionTitle); 
+    }
+
+    void CheckSkipButton(){
+        if(activeLevelSection == currentPlayingSection){
+            deleteButton.interactable = false; 
+            skipButton.gameObject.SetActive(true); 
+        }
+        else {
+            deleteButton.interactable = true; 
+            skipButton.gameObject.SetActive(false); 
+        }
     }
     void SetSliderValue(Slider slider, float value, float min, float max){
         value = Mathf.Clamp(value, min, max); 
@@ -247,7 +265,9 @@ public class UiSettingsManager : MonoBehaviour
     }
 
     void SetLevelSectionActive(UiLevelSection sectionUi, bool state){
-        if(sectionUi) sectionUi.SetContainerState(state); 
+        if(sectionUi && activeLevelSection != currentPlayingSection) sectionUi.SetContainerState(state); 
+        else if(sectionUi && activeLevelSection == currentPlayingSection) sectionUi.SetContainerPlayingState(state);
+        else if(sectionUi) sectionUi.SetContainerPlayingState(state);
     }
 
     public void SetIndex(GameObject gameobject, int index)
@@ -260,6 +280,9 @@ public class UiSettingsManager : MonoBehaviour
     public void DeleteActiveExercise(){
         UiLevelSection uiElement;
         uiLevelSections.Remove(activeLevelSection, out uiElement); 
+        if(currentPlayingSection != null){
+            levelManager.DeleteSection(activeLevelSection); 
+        }
         Destroy(uiElement.gameObject);
 
         InvokeSectionSettings(uiLevelSections.First().Key); 
@@ -268,6 +291,26 @@ public class UiSettingsManager : MonoBehaviour
             InstantiateAddButton(); 
         }
         UpdateTimeFrame(); 
+    }
+    public void SkipActiveExercise(){
+        scroller.SkipCurrentSection();
+        skipButton.gameObject.SetActive(false); 
+    }
+    public void SetCurrentPlayingSection(LevelSection section){
+
+        if(section.breakTime){
+            uiLevelSections[currentPlayingSection].SetContainerPlaying(section.breakTime); 
+            return; 
+        }
+
+        if(currentPlayingSection != null){
+            uiLevelSections[currentPlayingSection].SetContainerState(false); 
+            uiLevelSections[currentPlayingSection].SetButtonState(false); 
+        }
+        currentPlayingSection = section; 
+
+        uiLevelSections[currentPlayingSection].SetContainerPlaying(); 
+
     }
     public void StartLevels(){
         List<LevelSection> sections = new List<LevelSection>();
@@ -304,6 +347,8 @@ public class UiSettingsManager : MonoBehaviour
 
         UpdateSectionToggles();
         UpdateSectionTime(); 
+        if(currentPlayingSection != null) levelManager.UpdateBreakValues(activeLevelSection); 
+        if(currentPlayingSection == activeLevelSection) scroller.UpdateCurrentSectionValues(activeLevelSection);
     }
     private void UpdateSectionToggles(){
         uiLevelSections[activeLevelSection].SetIconStates(  activeLevelSection.obstacleOptions.jump,
@@ -344,8 +389,6 @@ public class UiSettingsManager : MonoBehaviour
     }
 
     private void SetValuesFromPreset(LevelSectionPreset preset){
-
-
         durationMinutes.text = preset.durationMinutes.ToString(); 
         durationSeconds.text = preset.durationSeconds.ToString(); 
 
@@ -359,12 +402,13 @@ public class UiSettingsManager : MonoBehaviour
         rightLegUp.isOn = preset.rightLegUp; 
         leftLegUp.isOn = preset.leftLegUp; 
 
-        maxLaneChange.value = (int)preset.maxLaneChange; 
-        laneChangeGap.value = (int)preset.laneChangeGap; 
-        laneChangeRate.value = preset.laneChangeRate; 
-        bridgeSpawnRate.value = (int)preset.bridgeSpawnRate; 
-        obstacleSpawnRate.value = (int)preset.obstacleSpawnRate; 
-        speed.value = preset.speed; 
+        SetSliderValue(maxLaneChange, preset.maxLaneChange,1,3); 
+        SetSliderValue(laneChangeGap, preset.laneChangeGap,0,3); 
+        SetSliderValue(laneChangeRate, preset.laneChangeRate,0.5f,2); 
+        SetSliderValue(bridgeSpawnRate, preset.bridgeSpawnRate,0,10); 
+        SetSliderValue(obstacleSpawnRate, preset.obstacleSpawnRate,0,10); 
+        SetSliderValue(speed, preset.speed,0.05f,0.3f); 
+
         InvokeSectionSettings(activeLevelSection);
     }
 }

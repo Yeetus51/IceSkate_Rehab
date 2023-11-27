@@ -68,6 +68,9 @@ public class Scroller : MonoBehaviour
 
     private int spawnIceCallCount; 
     private int spawnIceCallCountSection; 
+    private int initialSpawnIceCallCountSection; 
+
+    [SerializeField] UiSettingsManager uiSettingsManager; 
 /*    private bool spawningExtraIce;
     bool once = false; */
 
@@ -86,6 +89,8 @@ public class Scroller : MonoBehaviour
         LevelSection section = sections[index]; 
         index++; 
 
+        uiSettingsManager.SetCurrentPlayingSection(section); 
+
         tutorialMode = section.tutorialMode; 
         singleLaneMode = section.singleLaneMode; 
         maxLaneChange = section.maxLaneChange;
@@ -96,7 +101,7 @@ public class Scroller : MonoBehaviour
         obstacleSpawnRate = section.obstacleSpawnRate; 
         speed = section.speed; 
         breakTime = section.breakTime; 
-        Debug.Log(speed);
+
 
         if(index < sections.Count){
             StartCoroutine(WaitForIceSections(sections[index-1].distance,() => SetLevelSection(sections, index))); 
@@ -359,6 +364,7 @@ public class Scroller : MonoBehaviour
     IEnumerator WaitForIceSections(int numberOfCalls, Action method)
     {
         spawnIceCallCountSection = numberOfCalls; 
+        initialSpawnIceCallCountSection = spawnIceCallCountSection; 
         yield return new WaitUntil(() => spawnIceCallCountSection <= 0);
 
         method?.Invoke(); 
@@ -677,6 +683,34 @@ public class Scroller : MonoBehaviour
         GameObject newObject = GetPooledObject(openining);
         newObject.transform.position = position;
         newObject.transform.rotation = Quaternion.Euler(-90, flip ? 0 : 180, 0); 
+    }
+
+    public void UpdateCurrentSectionValues(LevelSection section){
+
+        if(breakTime){
+            int distanceDifference = initialSpawnIceCallCountSection - section.breakDistance; 
+            spawnIceCallCountSection -= distanceDifference; 
+            initialSpawnIceCallCountSection = spawnIceCallCountSection;
+        }
+        if(!breakTime){
+            int distanceDifference = initialSpawnIceCallCountSection - section.distance; 
+            spawnIceCallCountSection -= distanceDifference; 
+            initialSpawnIceCallCountSection = spawnIceCallCountSection;
+
+            tutorialMode = section.tutorialMode; 
+            singleLaneMode = section.singleLaneMode; 
+            obstacleOptions = section.obstacleOptions;
+
+            maxLaneChange = section.maxLaneChange;
+            laneChangeGap = section.laneChangeGap;
+            laneChangeFrequency = section.laneChangeFrequency; 
+            bridgeSpawnRate = section.bridgeSpawnRate;
+            obstacleSpawnRate = section.obstacleSpawnRate;
+            speed = section.speed;  
+        }
+    }
+    public void SkipCurrentSection(){
+        spawnIceCallCountSection = 0; 
     }
 
     // Update is called once per frame

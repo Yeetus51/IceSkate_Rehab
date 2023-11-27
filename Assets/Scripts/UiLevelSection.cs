@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class UiLevelSection : MonoBehaviour
 {
+    [SerializeField] private Button button; 
     [SerializeField] private Image container;  
     [SerializeField] private TMP_Text title; 
     [SerializeField] private TMP_Text duration; 
@@ -38,5 +39,14 @@ public class UiLevelSection : MonoBehaviour
         if(icon) icon.color = new Color(1,1,1,state?1:0.3f);
     }
     public void SetContainerState(bool state) => SetImageState(container,state); 
+
+    public void SetContainerPlaying(bool breakTime = false){
+        container.color = new Color(breakTime?0.7f:0,breakTime?0.7f:1,0,0.7f);
+    }
+    public void SetContainerPlayingState(bool state){
+        container.color = new Color(state?0.3f:0,1,state?0.3f:0,state?1:0.7f);
+    }
+
+    public void SetButtonState(bool state) => button.interactable = state; 
 
 }

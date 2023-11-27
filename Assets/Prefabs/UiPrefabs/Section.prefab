@@ -209,6 +209,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 931d93b461fe0fd40825240f09cd27b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  button: {fileID: 6755620608552246309}
   container: {fileID: 2977516716595819879}
   title: {fileID: 7388446067209056587}
   duration: {fileID: 8639013902085971201}
@@ -216,6 +217,23 @@ MonoBehaviour:
   crouch: {fileID: 5792557349235396559}
   rightLeg: {fileID: 8264341817475281014}
   LeftLeg: {fileID: 5554525784269190678}
+  levelSection:
+    distance: 0
+    breakDistance: 0
+    tutorialMode: 0
+    singleLaneMode: 0
+    breakTime: 0
+    maxLaneChange: 0
+    laneChangeGap: 0
+    laneChangeFrequency: 0
+    bridgeSpawnRate: 0
+    obstacleSpawnRate: 0
+    obstacleOptions:
+      jump: 0
+      rightLeg: 0
+      leftLeg: 0
+      crouch: 0
+    speed: 0
 --- !u!1 &3018795904169685687
 GameObject:
   m_ObjectHideFlags: 0

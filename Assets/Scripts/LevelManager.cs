@@ -9,23 +9,43 @@ public class LevelManager : MonoBehaviour
     public Scroller scroller; 
     public List<LevelSection> levelSections; 
 
-
-    void Start(){
-        scroller.SetLevels(levelSections); 
-    }
-
     public void SetSectionsData(List<LevelSection> sections){
         levelSections.Clear(); 
         foreach(LevelSection section in sections){
+            AddSection(section); 
+        }
+        scroller.SetLevels(levelSections); 
+    }
+
+    public void UpdateBreakValues(LevelSection section){
+        for(int i = 0; i < levelSections.Count; i++){
+            if(section == levelSections[i]){
+                levelSections[i + 1].speed = section.speed; 
+                levelSections[i + 1].distance = section.breakDistance; 
+                break;
+            }
+        }
+    }
+    public void AddSection(LevelSection section){
             levelSections.Add(section); 
             LevelSection breakSection = new LevelSection();
             breakSection.distance = section.breakDistance; 
             breakSection.breakTime = true; 
             breakSection.speed = section.speed; 
             levelSections.Add(breakSection); 
-        }
-        scroller.SetLevels(levelSections); 
     }
+    public void DeleteSection(LevelSection section){
+        for(int i = 0; i < levelSections.Count; i++){
+            if(section == levelSections[i]){
+                levelSections.RemoveAt(i);
+                levelSections.RemoveAt(i);
+                break;
+            }
+        }
+
+    }
+
+
 
 
 }
