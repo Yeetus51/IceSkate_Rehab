@@ -23,6 +23,7 @@ public class Scroller : MonoBehaviour
 
     [SerializeField] private bool tutorialMode = false; 
     [SerializeField] private bool singleLaneMode = false;
+    [SerializeField] private bool breakTime = false;
 
     [Range(1, 3)]
     [SerializeField] public int maxLaneChange = 1;
@@ -30,7 +31,7 @@ public class Scroller : MonoBehaviour
     [Range(0, 3)]
     [SerializeField] public int laneChangeGap = 1;
 
-    [Range(0.5f, 3)]
+    [Range(0.5f, 2)]
     [SerializeField] private float laneChangeFrequency = 1;
 
     [Range(0, 10)]
@@ -43,7 +44,7 @@ public class Scroller : MonoBehaviour
     private ObstacleOptions obstacleOptions; 
 
     [Space(30f)]
-    [Range(0.01f,5)]
+    [Range(0.05f,2)]
     [SerializeField] public float speed = 0.1f;
 
     [Range(10, 100)]
@@ -94,9 +95,11 @@ public class Scroller : MonoBehaviour
         obstacleOptions = section.obstacleOptions;
         obstacleSpawnRate = section.obstacleSpawnRate; 
         speed = section.speed; 
+        breakTime = section.breakTime; 
+        Debug.Log(speed);
 
         if(index < sections.Count){
-            StartCoroutine(WaitForIceSections(sections[index-1].duration,() => SetLevelSection(sections, index))); 
+            StartCoroutine(WaitForIceSections(sections[index-1].distance,() => SetLevelSection(sections, index))); 
         }
     }
 
@@ -226,7 +229,7 @@ public class Scroller : MonoBehaviour
                 queue[i] = 0;
             }
 
-            if (changeOpenLaneIn > 5 )
+            if (changeOpenLaneIn > 5 && !breakTime)
             {
                 QueueObstacles(changeOpenLaneIn);
             }
@@ -271,6 +274,12 @@ public class Scroller : MonoBehaviour
                 {
                     queue[lane] = length;
                 }
+            }
+        }
+        if(breakTime){
+            for (int i = 0; i < 5; i++)
+            {
+                queue[i] = 0; 
             }
         }
 
@@ -636,6 +645,12 @@ public class Scroller : MonoBehaviour
             int open = Random.Range(0, 5);
             paths[open] = 1;
         }
+        if(breakTime){
+            for (int i = 0; i < 5; i++)
+            {
+                paths[i] = 1; 
+            }
+        }
 
         for (int i = 0; i < paths.Length; i++)
         {
@@ -751,17 +766,24 @@ public class ObstacleAssets
 [Serializable]
 public class ObstacleOptions
 {
-    public bool Jump;
-    public bool RightLeg;
-    public bool LeftLeg; 
+    public bool jump;
+    public bool rightLeg;
+    public bool leftLeg; 
+    public bool crouch; // MISSING IMPLEMENTATION 
 
     public List<int> GetOptionAmount()
     {
         List<int> options = new List<int>();
-        if (Jump) options.Add(0); 
-        if (RightLeg) options.Add(1);
-        if (LeftLeg) options.Add(2);
+        if (jump) options.Add(0); 
+        if (rightLeg) options.Add(1);
+        if (leftLeg) options.Add(2);
         return options; 
+    }
+
+    public ObstacleOptions(bool pJump = false, bool pRightLeg = false, bool pLeftLeg = false, bool pCrouch = false){
+        jump = pJump; 
+        rightLeg = pRightLeg; 
+        leftLeg = pLeftLeg; 
     }
 }
 
