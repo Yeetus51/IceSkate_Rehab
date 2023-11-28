@@ -12,13 +12,16 @@ public class Scroller : MonoBehaviour
     private List<TranslateObject> _planes = new List<TranslateObject>();
 
     [SerializeField]
-    private EnviromentAssets enviromentAssets;
+    private BridgeRoadAssets bridgeRoadAssets;
 
     [SerializeField]
     private IceAssets iceAssets;
 
     [SerializeField]
     private ObstacleAssets obstacleAssets;
+
+    [SerializeField] List<GameObject> houseAssets = new List<GameObject>(); 
+    [SerializeField] GameObject waterAsset; 
 
 
     [SerializeField] private bool tutorialMode = false; 
@@ -56,6 +59,8 @@ public class Scroller : MonoBehaviour
     float timer = 0;
 
     GameObject previousBridgeObject; 
+    GameObject previousHouseObject; 
+    GameObject previousWaterObject; 
     GameObject previousIceObject;
 
     private int[] queue = new int[5];
@@ -140,20 +145,27 @@ public class Scroller : MonoBehaviour
         InitializePool(iceAssets.IceIWith2CornerPiece);
 
 
-        InitializePool(enviromentAssets.bridgeSidePath);
-        InitializePool(enviromentAssets.bridge);
-        InitializePool(enviromentAssets.bridgeClosed);
-        InitializePool(enviromentAssets.bridgeLPieceOpening);
-        InitializePool(enviromentAssets.bridgeOpeningConnector);
-        InitializePool(enviromentAssets.bridgeSingleOpening);
+        InitializePool(bridgeRoadAssets.bridgeSidePath);
+        InitializePool(bridgeRoadAssets.bridge);
+        InitializePool(bridgeRoadAssets.bridgeClosed);
+        InitializePool(bridgeRoadAssets.bridgeLPieceOpening);
+        InitializePool(bridgeRoadAssets.bridgeOpeningConnector);
+        InitializePool(bridgeRoadAssets.bridgeSingleOpening);
 
         InitializePool(obstacleAssets.IceDebris);
         InitializePool(obstacleAssets.OrangeCone);
         InitializePool(obstacleAssets.Sledge);
 
+        foreach(GameObject house in houseAssets){
+            InitializePool(house); 
+        }
 
-        SpawnEnviroment(enviromentAssets.bridgeSidePath);
+        InitializePool(waterAsset); 
 
+
+        SpawnBridgeRoads(bridgeRoadAssets.bridgeSidePath);
+        SpawnRandomHouse();
+        SpawnWater(waterAsset);
         SpawnIce();
     }
 
@@ -308,6 +320,40 @@ public class Scroller : MonoBehaviour
                 spawningExtraIce = true; 
             }
         }*/
+    }
+    void SpawnRandomHouse(){
+        int index = Random.Range(0,houseAssets.Count); 
+        if(houseAssets.Count >  0){
+            SpawnHouse(houseAssets[index]); 
+        }
+    }
+
+    void SpawnHouse(GameObject prefab){
+
+        Vector3 position = previousHouseObject ? 
+            previousHouseObject.transform.position + 
+            Vector3.forward * previousHouseObject.GetComponent<Renderer>().bounds.size.z/2 +
+            Vector3.forward * prefab.GetComponent<Renderer>().bounds.size.z/2:
+
+            Vector3.forward * spawnDistance;
+
+        GameObject newObject = GetPooledObject(prefab);
+        newObject.transform.position = position - Vector3.forward * speed;
+        newObject.transform.rotation = Quaternion.Euler(-90, 0, 0); 
+        previousHouseObject = newObject;
+    }
+    void SpawnWater(GameObject prefab){
+        Vector3 position = previousWaterObject ? 
+            previousWaterObject.transform.position + 
+            Vector3.forward * previousWaterObject.GetComponent<Renderer>().bounds.size.z/2 +
+            Vector3.forward * prefab.GetComponent<Renderer>().bounds.size.z/2:
+
+            Vector3.forward * spawnDistance;
+
+        GameObject newObject = GetPooledObject(prefab);
+        newObject.transform.position = position - Vector3.forward * speed;
+        newObject.transform.rotation = Quaternion.Euler(-90, 0, 0); 
+        previousWaterObject = newObject;
     }
 
     private void Break(bool pBreak)
@@ -591,11 +637,6 @@ public class Scroller : MonoBehaviour
             }*/
         }
     }
-/*    IEnumerator ReenableOnce()
-    {
-        yield return new WaitForFixedUpdate();
-        once = false; 
-    }*/
 
     void ShiftIceMap()
     {
@@ -619,7 +660,7 @@ public class Scroller : MonoBehaviour
 
 
 
-    void SpawnEnviroment(GameObject prefab,float offset = 0)
+    void SpawnBridgeRoads(GameObject prefab,float offset = 0)
     {
 
         Vector3 position = previousBridgeObject ? 
@@ -637,7 +678,7 @@ public class Scroller : MonoBehaviour
     void SpawnBridge()
     {
         holeGenerationPause += 15; 
-        SpawnEnviroment(enviromentAssets.bridge);
+        SpawnBridgeRoads(bridgeRoadAssets.bridge);
         int[] paths = new int[5];
         bool possible = false;
         for (int i = 0; i < paths.Length; i++)
@@ -666,11 +707,11 @@ public class Scroller : MonoBehaviour
             int next = i + 1 < paths.Length ? paths[i + 1] : 0;
             Vector3 position = previousBridgeObject.transform.position + Vector3.right * (i - 2)*2;
 
-            if (previous == 0 && current == 1 && next == 0) SpawnBridgeOpening(position, enviromentAssets.bridgeSingleOpening); // Single opening 
-            else if (previous == 1 && current == 1 && next == 0) SpawnBridgeOpening(position, enviromentAssets.bridgeLPieceOpening);// L piece flipped
-            else if (previous == 0 && current == 1 && next == 1) SpawnBridgeOpening(position, enviromentAssets.bridgeLPieceOpening, true);// L piece 
-            else if (previous == 1 && current == 1 && next == 1) SpawnBridgeOpening(position, enviromentAssets.bridgeOpeningConnector);// connector piece 
-            else if (current == 0) SpawnBridgeOpening(position, enviromentAssets.bridgeClosed);// blocked
+            if (previous == 0 && current == 1 && next == 0) SpawnBridgeOpening(position, bridgeRoadAssets.bridgeSingleOpening); // Single opening 
+            else if (previous == 1 && current == 1 && next == 0) SpawnBridgeOpening(position, bridgeRoadAssets.bridgeLPieceOpening);// L piece flipped
+            else if (previous == 0 && current == 1 && next == 1) SpawnBridgeOpening(position, bridgeRoadAssets.bridgeLPieceOpening, true);// L piece 
+            else if (previous == 1 && current == 1 && next == 1) SpawnBridgeOpening(position, bridgeRoadAssets.bridgeOpeningConnector);// connector piece 
+            else if (current == 0) SpawnBridgeOpening(position, bridgeRoadAssets.bridgeClosed);// blocked
         }
 
 /*
@@ -728,13 +769,21 @@ public class Scroller : MonoBehaviour
         {
             int random = Random.Range(0, 10);
             if (random < bridgeSpawnRate) SpawnBridge();
-            else SpawnEnviroment(enviromentAssets.bridgeSidePath); 
+            else SpawnBridgeRoads(bridgeRoadAssets.bridgeSidePath); 
         }
 
         if (spawnDistance - previousIceObject.transform.position.z > 0)
         {
             SpawnIce();
         }
+
+        if(spawnDistance - previousHouseObject.transform.position.z > 0){
+            SpawnRandomHouse(); 
+        }
+        if(spawnDistance - previousWaterObject.transform.position.z > 0){
+            SpawnWater(waterAsset); 
+        }
+
 
 
     }
@@ -758,7 +807,7 @@ public class Scroller : MonoBehaviour
 }
 
 [Serializable]
-public class EnviromentAssets
+public class BridgeRoadAssets
 {
     public GameObject bridge;
     public GameObject bridgeClosed;
