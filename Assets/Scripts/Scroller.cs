@@ -23,6 +23,7 @@ public class Scroller : MonoBehaviour
 
     [SerializeField] private bool tutorialMode = false; 
     [SerializeField] private bool singleLaneMode = false;
+    [SerializeField] private bool breakTime = false;
 
     [Range(1, 3)]
     [SerializeField] public int maxLaneChange = 1;
@@ -30,7 +31,7 @@ public class Scroller : MonoBehaviour
     [Range(0, 3)]
     [SerializeField] public int laneChangeGap = 1;
 
-    [Range(0.5f, 3)]
+    [Range(0.5f, 2)]
     [SerializeField] private float laneChangeFrequency = 1;
 
     [Range(0, 10)]
@@ -43,7 +44,7 @@ public class Scroller : MonoBehaviour
     private ObstacleOptions obstacleOptions; 
 
     [Space(30f)]
-    [Range(0.01f,5)]
+    [Range(0.05f,2)]
     [SerializeField] public float speed = 0.1f;
 
     [Range(10, 100)]
@@ -67,6 +68,9 @@ public class Scroller : MonoBehaviour
 
     private int spawnIceCallCount; 
     private int spawnIceCallCountSection; 
+    private int initialSpawnIceCallCountSection; 
+
+    [SerializeField] UiSettingsManager uiSettingsManager; 
 /*    private bool spawningExtraIce;
     bool once = false; */
 
@@ -85,6 +89,8 @@ public class Scroller : MonoBehaviour
         LevelSection section = sections[index]; 
         index++; 
 
+        uiSettingsManager.SetCurrentPlayingSection(section); 
+
         tutorialMode = section.tutorialMode; 
         singleLaneMode = section.singleLaneMode; 
         maxLaneChange = section.maxLaneChange;
@@ -94,9 +100,11 @@ public class Scroller : MonoBehaviour
         obstacleOptions = section.obstacleOptions;
         obstacleSpawnRate = section.obstacleSpawnRate; 
         speed = section.speed; 
+        breakTime = section.breakTime; 
+
 
         if(index < sections.Count){
-            StartCoroutine(WaitForIceSections(sections[index-1].duration,() => SetLevelSection(sections, index))); 
+            StartCoroutine(WaitForIceSections(sections[index-1].distance,() => SetLevelSection(sections, index))); 
         }
     }
 
@@ -205,8 +213,8 @@ public class Scroller : MonoBehaviour
 
         if (changeOpenLaneIn <= 0 && holeGenerationPause <= 0)
         {
-            Debug.Log(alwaysOpenLane); 
-            Debug.Log(holeGenerationPause);
+            // Debug.Log(alwaysOpenLane); 
+            // Debug.Log(holeGenerationPause);
             previousLane = alwaysOpenLane; 
             changeOpenLaneIn = Random.Range((int)(5 * (1/laneChangeFrequency)), (int)(15 * 1/laneChangeFrequency));
             alwaysOpenLane = Random.Range(Mathf.Clamp(alwaysOpenLane - maxLaneChange, 0,5), Mathf.Clamp(alwaysOpenLane + maxLaneChange +1, 0, 5));
@@ -226,7 +234,7 @@ public class Scroller : MonoBehaviour
                 queue[i] = 0;
             }
 
-            if (changeOpenLaneIn > 5 )
+            if (changeOpenLaneIn > 5 && !breakTime)
             {
                 QueueObstacles(changeOpenLaneIn);
             }
@@ -273,6 +281,12 @@ public class Scroller : MonoBehaviour
                 }
             }
         }
+        if(breakTime){
+            for (int i = 0; i < 5; i++)
+            {
+                queue[i] = 0; 
+            }
+        }
 
 
 
@@ -301,7 +315,7 @@ public class Scroller : MonoBehaviour
         if (pBreak) holeGenerationPause = 1000;
         else holeGenerationPause = 0;
 
-        Debug.Log("Valeu: " + holeGenerationPause + pBreak);
+        // Debug.Log("Valeu: " + holeGenerationPause + pBreak);
     }
 
     private void QueueObstacles(int freeSpace)
@@ -350,6 +364,7 @@ public class Scroller : MonoBehaviour
     IEnumerator WaitForIceSections(int numberOfCalls, Action method)
     {
         spawnIceCallCountSection = numberOfCalls; 
+        initialSpawnIceCallCountSection = spawnIceCallCountSection; 
         yield return new WaitUntil(() => spawnIceCallCountSection <= 0);
 
         method?.Invoke(); 
@@ -636,6 +651,12 @@ public class Scroller : MonoBehaviour
             int open = Random.Range(0, 5);
             paths[open] = 1;
         }
+        if(breakTime){
+            for (int i = 0; i < 5; i++)
+            {
+                paths[i] = 1; 
+            }
+        }
 
         for (int i = 0; i < paths.Length; i++)
         {
@@ -662,6 +683,34 @@ public class Scroller : MonoBehaviour
         GameObject newObject = GetPooledObject(openining);
         newObject.transform.position = position;
         newObject.transform.rotation = Quaternion.Euler(-90, flip ? 0 : 180, 0); 
+    }
+
+    public void UpdateCurrentSectionValues(LevelSection section){
+
+        if(breakTime){
+            int distanceDifference = initialSpawnIceCallCountSection - section.breakDistance; 
+            spawnIceCallCountSection -= distanceDifference; 
+            initialSpawnIceCallCountSection = spawnIceCallCountSection;
+        }
+        if(!breakTime){
+            int distanceDifference = initialSpawnIceCallCountSection - section.distance; 
+            spawnIceCallCountSection -= distanceDifference; 
+            initialSpawnIceCallCountSection = spawnIceCallCountSection;
+
+            tutorialMode = section.tutorialMode; 
+            singleLaneMode = section.singleLaneMode; 
+            obstacleOptions = section.obstacleOptions;
+
+            maxLaneChange = section.maxLaneChange;
+            laneChangeGap = section.laneChangeGap;
+            laneChangeFrequency = section.laneChangeFrequency; 
+            bridgeSpawnRate = section.bridgeSpawnRate;
+            obstacleSpawnRate = section.obstacleSpawnRate;
+            speed = section.speed;  
+        }
+    }
+    public void SkipCurrentSection(){
+        spawnIceCallCountSection = 0; 
     }
 
     // Update is called once per frame
@@ -751,17 +800,24 @@ public class ObstacleAssets
 [Serializable]
 public class ObstacleOptions
 {
-    public bool Jump;
-    public bool RightLeg;
-    public bool LeftLeg; 
+    public bool jump;
+    public bool rightLeg;
+    public bool leftLeg; 
+    public bool crouch; // MISSING IMPLEMENTATION 
 
     public List<int> GetOptionAmount()
     {
         List<int> options = new List<int>();
-        if (Jump) options.Add(0); 
-        if (RightLeg) options.Add(1);
-        if (LeftLeg) options.Add(2);
+        if (jump) options.Add(0); 
+        if (rightLeg) options.Add(1);
+        if (leftLeg) options.Add(2);
         return options; 
+    }
+
+    public ObstacleOptions(bool pJump = false, bool pRightLeg = false, bool pLeftLeg = false, bool pCrouch = false){
+        jump = pJump; 
+        rightLeg = pRightLeg; 
+        leftLeg = pLeftLeg; 
     }
 }
 
