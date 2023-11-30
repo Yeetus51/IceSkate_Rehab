@@ -951,11 +951,13 @@ namespace com.rfilkov.components
 
         public float GetPlayerXPos()
         {
+            if(!kinectManager) return 0; 
             return kinectManager.GetUserPosition(playerId).x;
         }
 
         public float GetPlayerYPos()
         {
+            if(!kinectManager) return 0;
             return kinectManager.GetUserPosition(playerId).y;
         }
 

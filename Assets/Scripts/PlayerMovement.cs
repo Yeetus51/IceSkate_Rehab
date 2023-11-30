@@ -13,6 +13,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] AvatarController avatarController;
 
     [SerializeField] bool keyboardControlls = false;
+
+    [SerializeField] bool disableExternalMovement = true; 
     [SerializeField] float keyboardControllsMovementSpeed;
 
     [Range(3f,7f)]
@@ -36,6 +38,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] FollowPlayer followPlayer; 
     [SerializeField] PlayerActionsDetector playerActionsDetector; 
 
+    [SerializeField] GameObject character; 
+
     private int[] completedTutorials = new int[6]; 
 
 
@@ -46,19 +50,20 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
+        if(jumping) Jumping(); 
+
+
+
+        if(disableExternalMovement) return; 
+
         if (Input.GetKeyDown(KeyCode.S)) snapping = !snapping; 
         if (Input.GetKeyDown(KeyCode.D)) interpolatedSnapping = !interpolatedSnapping; 
-        // if (keyboardControlls)
-        // {
-   
-
-        //     return; 
-        // }
 
         if(!keyboardControlls){
             float xPosition = avatarController.GetPlayerXPos() * distanceMultiplier;
+            Debug.Log(xPosition);
 
             if (snapping && interpolatedSnapping)
             {
@@ -81,12 +86,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         else{
-            // if(Input.GetKey(KeyCode.D)){
-            //     transform.position += Vector3.right * movementSpeed; 
-            // }
-            // if(Input.GetKey(KeyCode.A)){
-            //     transform.position -= Vector3.right * movementSpeed; 
-            // }
+
             if (Input.GetKeyDown(KeyCode.A) && currentLane > (sideLanes * -1))
             {
                 currentLane--;
@@ -208,11 +208,11 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
-    private void FixedUpdate(){
-        if(jumping) Jumping(); 
+    // private void FixedUpdate(){
+    //     if(jumping) Jumping(); 
 
-        UpdateLane();
-    }
+    //     UpdateLane();
+    // }
 
-    private void UpdateLane() => this.transform.position = new Vector3(Mathf.Lerp(transform.position.x,currentLane * 2,keyboardControllsMovementSpeed), this.transform.position.y, this.transform.position.z);
+    private void UpdateLane() => character.transform.position = new Vector3(Mathf.Lerp(character.transform.position.x,currentLane * 2,keyboardControllsMovementSpeed), character.transform.position.y, character.transform.position.z);
 }

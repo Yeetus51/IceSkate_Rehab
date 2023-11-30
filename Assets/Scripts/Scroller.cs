@@ -390,8 +390,6 @@ public class Scroller : MonoBehaviour
 
         Vector3 offset = Vector3.up * collectableSpawnHeight + (side==0?Vector3.right:-Vector3.right);  
 
-        Debug.Log("spanwing !" + type);
-
         switch(type){
             case 0:
                 StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleCollectables(collectableAssets.coco,amount,alwaysOpenLane,Quaternion.identity,tag = "CollectableCoco", offset)));
