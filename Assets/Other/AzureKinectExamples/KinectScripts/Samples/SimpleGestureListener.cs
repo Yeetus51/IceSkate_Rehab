@@ -121,8 +121,8 @@ namespace com.rfilkov.components
             if (progressDisplayed)
                 return true;
 
-            string sGestureText = gesture + " detected";
-            Debug.Log(sGestureText);
+              string sGestureText = gesture + " detected";
+//            Debug.Log(sGestureText);
 
             if (gestureInfo != null)
             {

@@ -392,7 +392,7 @@ public class Scroller : MonoBehaviour
                 }
                 break;
             case (int)ObstacleType.LeftLegUp:
-                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.BottomLeft))));
+                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.BottomLeft),"LeftLegUp")));
                 break;
             case (int)ObstacleType.RightLegUp:
                 StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.TopRight))));
@@ -425,7 +425,7 @@ public class Scroller : MonoBehaviour
         newObject.transform.rotation = orientation; 
     }
 
-    void SpawnMultipleObstacles(GameObject prefab, int amount, int lane, Quaternion orientation)
+    void SpawnMultipleObstacles(GameObject prefab, int amount, int lane, Quaternion orientation, string tag = "")
     {
         if (amount == 0) return; 
 
@@ -434,7 +434,9 @@ public class Scroller : MonoBehaviour
         newObject.transform.position = position;
         newObject.transform.rotation = orientation;
 
-        StartCoroutine(WaitForIce(1, () => SpawnMultipleObstacles(prefab, amount - 1,lane, orientation)));
+        if(tag != "") newObject.tag = tag; 
+
+        StartCoroutine(WaitForIce(1, () => SpawnMultipleObstacles(prefab, amount - 1,lane, orientation, tag)));
 
     }
 
