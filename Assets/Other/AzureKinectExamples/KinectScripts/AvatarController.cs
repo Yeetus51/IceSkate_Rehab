@@ -954,6 +954,11 @@ namespace com.rfilkov.components
             return kinectManager.GetUserPosition(playerId).x;
         }
 
+        public float GetPlayerYPos()
+        {
+            return kinectManager.GetUserPosition(playerId).y;
+        }
+
         // Moves the avatar transform
         protected void DoMoveAvatar(ulong UserID, Vector3 trans)
         {

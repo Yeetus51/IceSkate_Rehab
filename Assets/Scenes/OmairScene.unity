@@ -1108,6 +1108,7 @@ GameObject:
   - component: {fileID: 232448796}
   - component: {fileID: 232448795}
   - component: {fileID: 232448800}
+  - component: {fileID: 232448801}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1129,15 +1130,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sideLanes: 2
   avatarController: {fileID: 783499016}
-  keyboardControlls: 1
+  keyboardControlls: 0
   keyboardControllsMovementSpeed: 0.05
   distanceMultiplier: 5.12
-  gravityStrength: 0.04
-  jumpHight: 0.25
+  gravityStrength: 0.35
+  jumpHight: 0.95
   movementSpeed: 0.02
   gameUiManager: {fileID: 306294420}
   scroller: {fileID: 1438923500}
   followPlayer: {fileID: 684776681}
+  playerActionsDetector: {fileID: 232448801}
 --- !u!65 &232448796
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1252,6 +1254,30 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &232448801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 232448794}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 216255c0d9a753049a809b8ba53736f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pelvis: {fileID: 762327275}
+  rightFoot: {fileID: 1881600508}
+  leftFoot: {fileID: 1360799783}
+  rightKnee: {fileID: 1582004858}
+  leftKnee: {fileID: 376615640}
+  avatarController: {fileID: 783499016}
+  playerMovement: {fileID: 232448795}
+  legRaiseThreshhold: 0.3
+  jumpThreshhold: 0.2
+  jumped: 0
+  rightLegUp: 0
+  leftLegUp: 0
 --- !u!1 &236697046
 GameObject:
   m_ObjectHideFlags: 0
@@ -2083,6 +2109,12 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!4 &376615640 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400084, guid: ae23d50304c93b9418b65cec8f9fe954,
+    type: 3}
+  m_PrefabInstance: {fileID: 469315893}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &407361019
 GameObject:
   m_ObjectHideFlags: 0
@@ -5068,6 +5100,12 @@ CapsuleCollider:
   m_Height: 1.6
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &762327275 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400106, guid: ae23d50304c93b9418b65cec8f9fe954,
+    type: 3}
+  m_PrefabInstance: {fileID: 469315893}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &765693042
 GameObject:
   m_ObjectHideFlags: 0
@@ -9319,6 +9357,12 @@ MonoBehaviour:
   m_Spacing: {x: 20.42, y: 0}
   m_Constraint: 2
   m_ConstraintCount: 6
+--- !u!4 &1360799783 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400054, guid: ae23d50304c93b9418b65cec8f9fe954,
+    type: 3}
+  m_PrefabInstance: {fileID: 469315893}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1366245905
 GameObject:
   m_ObjectHideFlags: 0
@@ -9933,13 +9977,13 @@ MonoBehaviour:
   laneChangeGap: 1
   laneChangeFrequency: 1
   bridgeSpawnRate: 0
-  obstacleSpawnRate: 2
+  obstacleSpawnRate: 8
   obstacleOptions:
     jump: 0
-    rightLeg: 0
+    rightLeg: 1
     leftLeg: 0
     crouch: 0
-  speed: 0.5
+  speed: 0.153
   spawnDistance: 100
   despawnDistance: 50
   uiSettingsManager: {fileID: 1724872623}
@@ -11032,6 +11076,12 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -100, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!4 &1582004858 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400086, guid: ae23d50304c93b9418b65cec8f9fe954,
+    type: 3}
+  m_PrefabInstance: {fileID: 469315893}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1586034741
 GameObject:
   m_ObjectHideFlags: 0
@@ -13970,6 +14020,12 @@ RectTransform:
   m_AnchoredPosition: {x: 20.000006, y: 0}
   m_SizeDelta: {x: 60, y: -42}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!4 &1881600508 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400056, guid: ae23d50304c93b9418b65cec8f9fe954,
+    type: 3}
+  m_PrefabInstance: {fileID: 469315893}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1889484207
 GameObject:
   m_ObjectHideFlags: 0
@@ -15563,7 +15619,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2132832765}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 71efa4381866a5a4a8e2eb39849873bc, type: 3}
   m_Name: 

@@ -992,8 +992,8 @@ namespace com.rfilkov.kinect
             float gestureRight = jointsPos[rightHipIndex].x;
             float gestureLeft = jointsPos[leftHipIndex].x;
 
-            if((jointsPos[leftAnkleIndex].y - jointsPos[hipCenterIndex].y) > -0.55f) Debug.Log("Raising left Leg");
-            if((jointsPos[rightAnkleIndex].y - jointsPos[hipCenterIndex].y) > -0.55f) Debug.Log("Raising right Leg");
+//            if((jointsPos[leftAnkleIndex].y - jointsPos[hipCenterIndex].y) > -0.55f) Debug.Log("Raising left Leg");
+ //           if((jointsPos[rightAnkleIndex].y - jointsPos[hipCenterIndex].y) > -0.55f) Debug.Log("Raising right Leg");
 
             // Debug.Log((jointsPos[leftAnkleIndex].y - jointsPos[hipCenterIndex].y));
 
@@ -1692,7 +1692,7 @@ namespace com.rfilkov.kinect
                             if (jointsTracked[hipCenterIndex] &&
                                 (jointsPos[hipCenterIndex].y > 0.6f) && (jointsPos[hipCenterIndex].y < 1.2f))
                             {
-                                Debug.Log((jointsPos[leftAnkleIndex].y - jointsPos[hipCenterIndex].y));
+//                                Debug.Log((jointsPos[leftAnkleIndex].y - jointsPos[hipCenterIndex].y));
                                 SetGestureJoint(ref gestureData, timestamp, hipCenterIndex, jointsPos[hipCenterIndex]);
                                 gestureData.progress = 0.5f;
                             }

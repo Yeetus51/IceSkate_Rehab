@@ -19,7 +19,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float distanceMultiplier = 1;
 
 
-    bool toggle;
+    bool snapping = true;
+    bool interpolatedSnapping = true;
 
     bool jumping; 
     float jumpVelocity; 
@@ -33,6 +34,7 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] Scroller scroller; 
     [SerializeField] FollowPlayer followPlayer; 
+    [SerializeField] PlayerActionsDetector playerActionsDetector; 
 
     // Start is called before the first frame update
     void Start()
@@ -43,7 +45,8 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.S)) toggle = !toggle; 
+        if (Input.GetKeyDown(KeyCode.S)) snapping = !snapping; 
+        if (Input.GetKeyDown(KeyCode.D)) interpolatedSnapping = !interpolatedSnapping; 
         // if (keyboardControlls)
         // {
    
@@ -52,18 +55,22 @@ public class PlayerMovement : MonoBehaviour
         // }
 
         if(!keyboardControlls){
-            transform.position = new Vector3(avatarController.GetPlayerXPos() * distanceMultiplier, transform.position.y, transform.position.z);
-            if (toggle)
+            float xPosition = avatarController.GetPlayerXPos() * distanceMultiplier;
+
+            if (snapping && interpolatedSnapping)
             {
-                float x = transform.position.x;
+                float x = xPosition;
                 float newXPostion = x - Mathf.Sin(x * Mathf.PI * 2) * 0.15f;
 
 
                 transform.position = new Vector3(newXPostion, transform.position.y, transform.position.z);
             }
-            else
+            else if(snapping)
             {
-                float x = transform.position.x / 2;
+              transform.position = new Vector3(xPosition, transform.position.y, transform.position.z);
+            }
+            else{
+                float x = xPosition / 2;
                 float newXPostion = Mathf.Round(x);
                 newXPostion *= 2;
 
@@ -92,35 +99,50 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void DoJump(){
-        jumping = true; 
-        jumpVelocity = jumpHight; 
-
+    public void DoJump(){
+        if(!jumping){
+            jumping = true; 
+            jumpVelocity = jumpHight; 
+        }
     }
 
     void Jumping(){
 
-        transform.position += Vector3.up * jumpVelocity * scroller.speed; 
+        transform.position += Vector3.up * jumpVelocity * Mathf.Clamp(scroller.speed,0,0.15f); 
 
         if(transform.position.y <= 0){
             transform.position = new Vector3(transform.position.x, 0, transform.position.z); 
             jumping = false;
         }
 
-        jumpVelocity -= gravityStrength * scroller.speed; 
+        jumpVelocity -= gravityStrength * Mathf.Clamp(scroller.speed,0,0.15f); 
 
     }
 
 
     private void OnTriggerEnter(Collider other){
 
+        switch (other.tag)
+        {
+            case "CameraDuck":
+                followPlayer.CameraDuck();
+                break;
 
-
-        if(other.tag == "CameraDuck"){
-            followPlayer.CameraDuck();
-            return; 
-        }
-        gameUiManager.InvokeVigniette();
+            case "RightLegUp":
+                if(!playerActionsDetector.rightLegUp){
+                    gameUiManager.InvokeVigniette();
+                }
+                break;
+            
+            case "LeftLegUp":
+                if(!playerActionsDetector.leftLegUp){
+                    gameUiManager.InvokeVigniette();
+                }
+                break;
+            default:
+                gameUiManager.InvokeVigniette();
+                break;
+        }        
     }
 
     private void OnTriggerExit(Collider other){
