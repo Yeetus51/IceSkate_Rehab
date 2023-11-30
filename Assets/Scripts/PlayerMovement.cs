@@ -36,6 +36,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] FollowPlayer followPlayer; 
     [SerializeField] PlayerActionsDetector playerActionsDetector; 
 
+    private int[] completedTutorials = new int[6]; 
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -139,11 +142,62 @@ public class PlayerMovement : MonoBehaviour
                     gameUiManager.InvokeVigniette();
                 }
                 break;
-            default:
+
+            case "TutorialMoveLeft":
+                if(GetTutorialCount(Tutorialtype.MoveLeft) < 2){
+                    gameUiManager.InvokeTutorial(Tutorialtype.MoveLeft);
+                    IncrementTutorialCount(Tutorialtype.MoveLeft); 
+                }
+                break;
+
+            case "TutorialMoveRight":
+                if(GetTutorialCount(Tutorialtype.MoveRight) < 2){
+                    gameUiManager.InvokeTutorial(Tutorialtype.MoveRight);
+                    IncrementTutorialCount(Tutorialtype.MoveRight); 
+                }
+                break;
+
+            case "TutorialJump":
+                if(GetTutorialCount(Tutorialtype.Jump) < 2){
+                    gameUiManager.InvokeTutorial(Tutorialtype.Jump);
+                    IncrementTutorialCount(Tutorialtype.Jump); 
+                }
+                break;
+
+            case "TutorialRightLegUp":
+                if(GetTutorialCount(Tutorialtype.RightLegUp) < 2){
+                    gameUiManager.InvokeTutorial(Tutorialtype.RightLegUp);
+                    IncrementTutorialCount(Tutorialtype.RightLegUp); 
+                }
+                break;
+
+            case "TutorialLeftLegUp":
+                if(GetTutorialCount(Tutorialtype.LeftLegUp) < 2){
+                    gameUiManager.InvokeTutorial(Tutorialtype.LeftLegUp);
+                    IncrementTutorialCount(Tutorialtype.LeftLegUp); 
+                }
+                break;
+
+            case "TutorialCrouch":
+                if(GetTutorialCount(Tutorialtype.Crouch) < 2){
+                    gameUiManager.InvokeTutorial(Tutorialtype.Crouch);
+                    IncrementTutorialCount(Tutorialtype.Crouch); 
+                }
+                break;
+
+            case "Jump":
+                gameUiManager.InvokeVigniette();
+                break;
+            case "Wall":
                 gameUiManager.InvokeVigniette();
                 break;
         }        
     }
+
+
+
+    void IncrementTutorialCount(Tutorialtype tutorialType) => completedTutorials[(int)tutorialType]++;
+    int GetTutorialCount(Tutorialtype tutorialType) => completedTutorials[(int)tutorialType];
 
     private void OnTriggerExit(Collider other){
 

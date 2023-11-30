@@ -6,21 +6,20 @@ using Random = UnityEngine.Random;
 
 public class Scroller : MonoBehaviour
 {
-
-    
-
     private List<TranslateObject> _planes = new List<TranslateObject>();
 
-    [SerializeField]
-    private BridgeRoadAssets bridgeRoadAssets;
 
-    [SerializeField]
-    private IceAssets iceAssets;
+    [SerializeField] private BridgeRoadAssets bridgeRoadAssets;
 
-    [SerializeField]
-    private ObstacleAssets obstacleAssets;
+    
+    [SerializeField] private IceAssets iceAssets;
+
+    
+    [SerializeField] private ObstacleAssets obstacleAssets;
 
     [SerializeField] List<GameObject> houseAssets = new List<GameObject>(); 
+
+    [SerializeField] private CollectableAssets collectableAssets; 
     [SerializeField] GameObject waterAsset; 
 
 
@@ -42,6 +41,13 @@ public class Scroller : MonoBehaviour
 
     [Range(0, 10)]
     [SerializeField] private int obstacleSpawnRate = 2;
+    
+
+    [Range(0, 1)]
+    [SerializeField] private float collectableSpawnRate = 0.5f;
+    [SerializeField] private float collectableSpawnHeight = 2;
+    [Range(0,6)]
+    [SerializeField] private int obstacleSpawnOffset; 
 
     [SerializeField]
     private ObstacleOptions obstacleOptions; 
@@ -55,6 +61,10 @@ public class Scroller : MonoBehaviour
 
     [Range(10, 50)]
     [SerializeField] public float despawnDistance = 10;
+
+    [Range(0,5)]
+    [SerializeField] private float tutorialNoticeDistance = 1; 
+    [SerializeField] private GameObject tutorialPrefab; 
 
     float timer = 0;
 
@@ -160,7 +170,12 @@ public class Scroller : MonoBehaviour
             InitializePool(house); 
         }
 
+        InitializePool(collectableAssets.coco);
+        InitializePool(collectableAssets.hotdog);
+        InitializePool(collectableAssets.soup);
+
         InitializePool(waterAsset); 
+        InitializePool(tutorialPrefab); 
 
 
         SpawnBridgeRoads(bridgeRoadAssets.bridgeSidePath);
@@ -225,8 +240,6 @@ public class Scroller : MonoBehaviour
 
         if (changeOpenLaneIn <= 0 && holeGenerationPause <= 0)
         {
-            // Debug.Log(alwaysOpenLane); 
-            // Debug.Log(holeGenerationPause);
             previousLane = alwaysOpenLane; 
             changeOpenLaneIn = Random.Range((int)(5 * (1/laneChangeFrequency)), (int)(15 * 1/laneChangeFrequency));
             alwaysOpenLane = Random.Range(Mathf.Clamp(alwaysOpenLane - maxLaneChange, 0,5), Mathf.Clamp(alwaysOpenLane + maxLaneChange +1, 0, 5));
@@ -238,7 +251,11 @@ public class Scroller : MonoBehaviour
             laneChangeGap = laneChangeGap == 0 ? Mathf.Abs(previousLane - alwaysOpenLane) > 1 ? 1 : laneChangeGap : laneChangeGap; 
 
             laneChanged = true;
-            // logIceMap();
+
+            if(tutorialMode && previousLane != alwaysOpenLane){
+                if(previousLane > alwaysOpenLane)SpawnTutorial(Tutorialtype.MoveLeft,tutorialPrefab);
+                else SpawnTutorial(Tutorialtype.MoveRight,tutorialPrefab);
+            }
 
 
             for (int i = 0; i < 5; i++)
@@ -249,6 +266,7 @@ public class Scroller : MonoBehaviour
             if (changeOpenLaneIn > 5 && !breakTime)
             {
                 QueueObstacles(changeOpenLaneIn);
+                QueueCollectables(changeOpenLaneIn);
             }
         }
 
@@ -356,12 +374,35 @@ public class Scroller : MonoBehaviour
         previousWaterObject = newObject;
     }
 
-    private void Break(bool pBreak)
-    {
-        if (pBreak) holeGenerationPause = 1000;
-        else holeGenerationPause = 0;
+    private void QueueCollectables(int freeSpace){
+        int spawn = Random.Range(0, 1);
+        if (spawn >= collectableSpawnRate) return;
 
-        // Debug.Log("Valeu: " + holeGenerationPause + pBreak);
+        int type = Random.Range(0, 3); // Incease this if added more Collectables 
+        int side = Random.Range(0,2);
+
+        if(alwaysOpenLane == 4 && side == 0)side = 1;
+        else if(alwaysOpenLane == 0 && side == 1) side = 0; 
+
+
+        int startPosition = Random.Range(obstacleSpawnOffset, freeSpace);
+        int amount = Random.Range(1, freeSpace - startPosition); 
+
+        Vector3 offset = Vector3.up * collectableSpawnHeight + (side==0?Vector3.right:-Vector3.right);  
+
+        Debug.Log("spanwing !" + type);
+
+        switch(type){
+            case 0:
+                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleCollectables(collectableAssets.coco,amount,alwaysOpenLane,Quaternion.identity,tag = "CollectableCoco", offset)));
+            break;
+            case 1:
+                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleCollectables(collectableAssets.hotdog,amount,alwaysOpenLane,Quaternion.identity,tag = "CollectableHotdog", offset)));
+            break;
+            case 2:
+                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleCollectables(collectableAssets.soup,amount,alwaysOpenLane,Quaternion.identity, tag = "CollectableSoup", offset)));
+            break;
+        }
     }
 
     private void QueueObstacles(int freeSpace)
@@ -373,7 +414,7 @@ public class Scroller : MonoBehaviour
         int type = Random.Range(0, options.Count);
         type = options[type]; 
 
-        int startPosition = Random.Range(3, freeSpace);
+        int startPosition = Random.Range(obstacleSpawnOffset, freeSpace);
 
 
 
@@ -385,17 +426,21 @@ public class Scroller : MonoBehaviour
                 if (rand == 0)
                 {
                     StartCoroutine(WaitForIce(startPosition, () => SpawnSingleObstacle(obstacleAssets.IceDebris, alwaysOpenLane, GetRot(Rot.TopRight))));
+                    if(tutorialMode) SpawnTutorial(Tutorialtype.Jump,tutorialPrefab); 
                 }
                 else
                 {
                     StartCoroutine(WaitForIce(startPosition, () => SpawnSingleObstacle(obstacleAssets.Sledge, alwaysOpenLane, GetRot(Rot.TopRight))));
+                    if(tutorialMode) SpawnTutorial(Tutorialtype.Jump,tutorialPrefab); 
                 }
                 break;
             case (int)ObstacleType.LeftLegUp:
                 StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.BottomLeft),"LeftLegUp")));
+                if(tutorialMode) SpawnTutorial(Tutorialtype.LeftLegUp,tutorialPrefab); 
                 break;
             case (int)ObstacleType.RightLegUp:
                 StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.TopRight))));
+                if(tutorialMode) SpawnTutorial(Tutorialtype.RightLegUp,tutorialPrefab); 
                 break;
         }
     }
@@ -425,20 +470,32 @@ public class Scroller : MonoBehaviour
         newObject.transform.rotation = orientation; 
     }
 
+    void SpawnMultipleCollectables(GameObject prefab, int amount, int lane, Quaternion orientation, string tag, Vector3 offset)
+    {
+        SpawnMultipleObjects(prefab,amount,lane,orientation,tag, offset);
+    }
     void SpawnMultipleObstacles(GameObject prefab, int amount, int lane, Quaternion orientation, string tag = "")
+    {
+        SpawnMultipleObjects(prefab,amount,lane,orientation,tag);
+    }
+    void SpawnMultipleObjects(GameObject prefab, int amount, int lane, Quaternion orientation, string tag = ""){
+        SpawnMultipleObjects(prefab, amount, lane, orientation,tag,Vector3.zero); 
+    }
+    void SpawnMultipleObjects(GameObject prefab, int amount, int lane, Quaternion orientation, string tag, Vector3 offset)
     {
         if (amount == 0) return; 
 
         GameObject newObject = GetPooledObject(prefab);
         Vector3 position = Vector3.forward * previousIceObject.transform.position.z + Vector3.forward * 2 - Vector3.forward * speed + Vector3.right * (lane - 2) * 2;
+        position += offset; 
         newObject.transform.position = position;
         newObject.transform.rotation = orientation;
 
         if(tag != "") newObject.tag = tag; 
 
-        StartCoroutine(WaitForIce(1, () => SpawnMultipleObstacles(prefab, amount - 1,lane, orientation, tag)));
-
+        StartCoroutine(WaitForIce(1, () => SpawnMultipleObjects(prefab, amount - 1,lane, orientation, tag, offset)));
     }
+
 
 
 
@@ -458,6 +515,42 @@ public class Scroller : MonoBehaviour
 
         //logIceMap();
         InstantiateIce();
+
+    }
+
+    void SpawnTutorial(Tutorialtype type, GameObject prefab){
+
+        GameObject newTutorial = GetPooledObject(prefab); 
+
+        newTutorial.transform.position = Vector3.forward * (spawnDistance - tutorialNoticeDistance);
+
+
+        switch(type){
+            case Tutorialtype.MoveLeft:
+                newTutorial.tag = "TutorialMoveLeft";
+            break;
+            case Tutorialtype.MoveRight:
+                newTutorial.tag = "TutorialMoveRight";
+            break;
+
+            case Tutorialtype.Jump:
+                newTutorial.tag = "TutorialJump";
+            break;
+
+            case Tutorialtype.RightLegUp:
+                newTutorial.tag = "TutorialRightLegUp";
+            break;
+
+            case Tutorialtype.LeftLegUp:
+                newTutorial.tag = "TutorialLeftLegUp";
+            break;
+            
+            case Tutorialtype.Crouch:
+                newTutorial.tag = "TutorialCrouch";
+            break;
+        }
+
+
     }
     // DO NOT TRY TO OPTIMIZE THIS, YOU WILL ONLY WASTE YOUR TIME, there are simply too many options 
     void InstantiateIce()
@@ -484,140 +577,140 @@ public class Scroller : MonoBehaviour
 
             int current = iceMap[lane, 1];
 
-            bool toSave = lane == 4; 
+            bool isLast = lane == 4; 
 
             if (prevX == 0 && current == 1 && nextX == 0 &&
-                prevY == 0 && nextY == 0) SpawnIceObject(position,iceAssets.IceOPiece, GetRot(Rot.BottomLeft), toSave); // Single Hole
+                prevY == 0 && nextY == 0) SpawnIceObject(position,iceAssets.IceOPiece, GetRot(Rot.BottomLeft), isLast); // Single Hole
             else if (prevX == 1 && current == 1 && nextX == 0 &&
-                    prevY == 0 && nextY == 0) SpawnIceObject(position, iceAssets.IceUPiece, GetRot(Rot.TopLeft), toSave); // U piece looking to the left
+                    prevY == 0 && nextY == 0) SpawnIceObject(position, iceAssets.IceUPiece, GetRot(Rot.TopLeft), isLast); // U piece looking to the left
             else if (prevX == 0 && current == 1 && nextX == 1 &&
-                    prevY == 0 && nextY == 0) SpawnIceObject(position, iceAssets.IceUPiece, GetRot(Rot.BottomRight), toSave); // U piece looking to the right
+                    prevY == 0 && nextY == 0) SpawnIceObject(position, iceAssets.IceUPiece, GetRot(Rot.BottomRight), isLast); // U piece looking to the right
             else if (prevX == 0 && current == 1 && nextX == 0 &&
-                    prevY == 1 && nextY == 0) SpawnIceObject(position, iceAssets.IceUPiece, GetRot(Rot.BottomLeft), toSave); // U piece looking behind
+                    prevY == 1 && nextY == 0) SpawnIceObject(position, iceAssets.IceUPiece, GetRot(Rot.BottomLeft), isLast); // U piece looking behind
             else if (prevX == 0 && current == 1 && nextX == 0 &&
-                    prevY == 0 && nextY == 1) SpawnIceObject(position, iceAssets.IceUPiece, GetRot(Rot.TopRight), toSave); // U piece looking forwards
+                    prevY == 0 && nextY == 1) SpawnIceObject(position, iceAssets.IceUPiece, GetRot(Rot.TopRight), isLast); // U piece looking forwards
             else if (prevX == 1 && current == 1 && nextX == 0 &&
                    prevY == 1 && nextY == 0 &&
-                   dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceLWithCornerPiece, GetRot(Rot.BottomLeft), toSave); // L piece with Corner looking left behind
+                   dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceLWithCornerPiece, GetRot(Rot.BottomLeft), isLast); // L piece with Corner looking left behind
             else if (prevX == 1 && current == 1 && nextX == 0 &&
                     prevY == 0 && nextY == 1 &&
-                    dTopLeft == 0) SpawnIceObject(position, iceAssets.IceLWithCornerPiece, GetRot(Rot.TopLeft), toSave); // L piece with Corner looking left forward
+                    dTopLeft == 0) SpawnIceObject(position, iceAssets.IceLWithCornerPiece, GetRot(Rot.TopLeft), isLast); // L piece with Corner looking left forward
             else if (prevX == 0 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 0 &&
-                    dBottomRight == 0) SpawnIceObject(position, iceAssets.IceLWithCornerPiece, GetRot(Rot.BottomRight), toSave); // L piece with Corner looking right behind
+                    dBottomRight == 0) SpawnIceObject(position, iceAssets.IceLWithCornerPiece, GetRot(Rot.BottomRight), isLast); // L piece with Corner looking right behind
             else if (prevX == 0 && current == 1 && nextX == 1 &&
                     prevY == 0 && nextY == 1 &&
-                    dTopRight == 0) SpawnIceObject(position, iceAssets.IceLWithCornerPiece, GetRot(Rot.TopRight), toSave); // L piece with Corner looking right forward
+                    dTopRight == 0) SpawnIceObject(position, iceAssets.IceLWithCornerPiece, GetRot(Rot.TopRight), isLast); // L piece with Corner looking right forward
 
             else if (prevX == 1 && current == 1 && nextX == 0 &&
-                    prevY == 1 && nextY == 0) SpawnIceObject(position, iceAssets.IceLPiece, GetRot(Rot.BottomLeft), toSave); // L piece looking left behind
+                    prevY == 1 && nextY == 0) SpawnIceObject(position, iceAssets.IceLPiece, GetRot(Rot.BottomLeft), isLast); // L piece looking left behind
             else if (prevX == 1 && current == 1 && nextX == 0 &&
-                    prevY == 0 && nextY == 1) SpawnIceObject(position, iceAssets.IceLPiece, GetRot(Rot.TopLeft), toSave); // L piece looking left forward
+                    prevY == 0 && nextY == 1) SpawnIceObject(position, iceAssets.IceLPiece, GetRot(Rot.TopLeft), isLast); // L piece looking left forward
             else if (prevX == 0 && current == 1 && nextX == 1 &&
-                    prevY == 1 && nextY == 0) SpawnIceObject(position, iceAssets.IceLPiece, GetRot(Rot.BottomRight), toSave); // L piece looking right behind
+                    prevY == 1 && nextY == 0) SpawnIceObject(position, iceAssets.IceLPiece, GetRot(Rot.BottomRight), isLast); // L piece looking right behind
             else if (prevX == 0 && current == 1 && nextX == 1 &&
-                    prevY == 0 && nextY == 1) SpawnIceObject(position, iceAssets.IceLPiece, GetRot(Rot.TopRight), toSave); // L piece looking right forward
+                    prevY == 0 && nextY == 1) SpawnIceObject(position, iceAssets.IceLPiece, GetRot(Rot.TopRight), isLast); // L piece looking right forward
 
             else if (prevX == 1 && current == 1 && nextX == 0 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopLeft == 0 && dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceIWith2CornerPiece, GetRot(Rot.BottomLeft), toSave); // I  with 2 corner piece vertical right
+                    dTopLeft == 0 && dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceIWith2CornerPiece, GetRot(Rot.BottomLeft), isLast); // I  with 2 corner piece vertical right
             else if (prevX == 1 && current == 1 && nextX == 0 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopLeft == 0) SpawnIceObject(position, iceAssets.IceIWithCornerRightPiece, GetRot(Rot.BottomLeft), toSave); // I  with corner Right piece vertical right
+                    dTopLeft == 0) SpawnIceObject(position, iceAssets.IceIWithCornerRightPiece, GetRot(Rot.BottomLeft), isLast); // I  with corner Right piece vertical right
             else if (prevX == 1 && current == 1 && nextX == 0 &&
                     prevY == 1 && nextY == 1 &&
-                    dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceIWithCornerLeftPiece, GetRot(Rot.BottomLeft), toSave); // I  with corner Left piece vertical right
+                    dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceIWithCornerLeftPiece, GetRot(Rot.BottomLeft), isLast); // I  with corner Left piece vertical right
             else if (prevX == 0 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dBottomRight == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.IceIWith2CornerPiece, GetRot(Rot.TopRight), toSave); // I with 2 corner piece vertical left
+                    dBottomRight == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.IceIWith2CornerPiece, GetRot(Rot.TopRight), isLast); // I with 2 corner piece vertical left
             else if (prevX == 0 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dBottomRight == 0) SpawnIceObject(position, iceAssets.IceIWithCornerRightPiece, GetRot(Rot.TopRight), toSave); // I with corner right piece vertical left
+                    dBottomRight == 0) SpawnIceObject(position, iceAssets.IceIWithCornerRightPiece, GetRot(Rot.TopRight), isLast); // I with corner right piece vertical left
             else if (prevX == 0 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopRight == 0) SpawnIceObject(position, iceAssets.IceIWithCornerLeftPiece, GetRot(Rot.TopRight), toSave); // I with corner left piece vertical left
+                    dTopRight == 0) SpawnIceObject(position, iceAssets.IceIWithCornerLeftPiece, GetRot(Rot.TopRight), isLast); // I with corner left piece vertical left
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 0 &&
-                    dBottomLeft == 0 && dBottomRight == 0) SpawnIceObject(position, iceAssets.IceIWith2CornerPiece, GetRot(Rot.BottomRight), toSave); // I with 2 corner piece horizontal top
+                    dBottomLeft == 0 && dBottomRight == 0) SpawnIceObject(position, iceAssets.IceIWith2CornerPiece, GetRot(Rot.BottomRight), isLast); // I with 2 corner piece horizontal top
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 0 &&
-                    dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceIWithCornerRightPiece, GetRot(Rot.BottomRight), toSave); // I with corner right piece horizontal top
+                    dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceIWithCornerRightPiece, GetRot(Rot.BottomRight), isLast); // I with corner right piece horizontal top
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 0 &&
-                    dBottomRight == 0) SpawnIceObject(position, iceAssets.IceIWithCornerLeftPiece, GetRot(Rot.BottomRight), toSave); // I with corner left piece horizontal top
+                    dBottomRight == 0) SpawnIceObject(position, iceAssets.IceIWithCornerLeftPiece, GetRot(Rot.BottomRight), isLast); // I with corner left piece horizontal top
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 0 && nextY == 1 &&
-                    dTopLeft == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.IceIWith2CornerPiece, GetRot(Rot.TopLeft), toSave); // I with 2 corner  piece horizontal bottom
+                    dTopLeft == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.IceIWith2CornerPiece, GetRot(Rot.TopLeft), isLast); // I with 2 corner  piece horizontal bottom
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 0 && nextY == 1 &&
-                    dTopRight == 0) SpawnIceObject(position, iceAssets.IceIWithCornerRightPiece, GetRot(Rot.TopLeft), toSave); // I with corner right piece horizontal bottom
+                    dTopRight == 0) SpawnIceObject(position, iceAssets.IceIWithCornerRightPiece, GetRot(Rot.TopLeft), isLast); // I with corner right piece horizontal bottom
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 0 && nextY == 1 &&
-                    dTopLeft == 0) SpawnIceObject(position, iceAssets.IceIWithCornerLeftPiece, GetRot(Rot.TopLeft), toSave); // I with corner left piece horizontal bottom
+                    dTopLeft == 0) SpawnIceObject(position, iceAssets.IceIWithCornerLeftPiece, GetRot(Rot.TopLeft), isLast); // I with corner left piece horizontal bottom
 
             else if (prevX == 1 && current == 1 && nextX == 0 &&
-                    prevY == 1 && nextY == 1) SpawnIceObject(position, iceAssets.IceIPiece, GetRot(Rot.BottomLeft), toSave); // I piece vertical right
+                    prevY == 1 && nextY == 1) SpawnIceObject(position, iceAssets.IceIPiece, GetRot(Rot.BottomLeft), isLast); // I piece vertical right
             else if (prevX == 0 && current == 1 && nextX == 1 &&
-                    prevY == 1 && nextY == 1) SpawnIceObject(position, iceAssets.IceIPiece, GetRot(Rot.TopRight), toSave); // I piece vertical left
+                    prevY == 1 && nextY == 1) SpawnIceObject(position, iceAssets.IceIPiece, GetRot(Rot.TopRight), isLast); // I piece vertical left
             else if (prevX == 1 && current == 1 && nextX == 1 &&
-                    prevY == 1 && nextY == 0) SpawnIceObject(position, iceAssets.IceIPiece, GetRot(Rot.BottomRight), toSave); // I piece horizontal top
+                    prevY == 1 && nextY == 0) SpawnIceObject(position, iceAssets.IceIPiece, GetRot(Rot.BottomRight), isLast); // I piece horizontal top
             else if (prevX == 1 && current == 1 && nextX == 1 &&
-                    prevY == 0 && nextY == 1) SpawnIceObject(position, iceAssets.IceIPiece, GetRot(Rot.TopLeft), toSave); // I piece horizontal bottom
+                    prevY == 0 && nextY == 1) SpawnIceObject(position, iceAssets.IceIPiece, GetRot(Rot.TopLeft), isLast); // I piece horizontal bottom
 
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopLeft == 0 && dBottomLeft == 0 && dTopRight == 0 && dBottomRight == 0) SpawnIceObject(position, iceAssets.Ice4CornerPiece, GetRot(Rot.BottomLeft), toSave); // C small 4 corner piece
+                    dTopLeft == 0 && dBottomLeft == 0 && dTopRight == 0 && dBottomRight == 0) SpawnIceObject(position, iceAssets.Ice4CornerPiece, GetRot(Rot.BottomLeft), isLast); // C small 4 corner piece
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopLeft == 0 && dBottomLeft == 0 && dBottomRight ==0) SpawnIceObject(position, iceAssets.Ice3CornerPiece, GetRot(Rot.BottomLeft), toSave); // C small 3 corner piece bottom left
+                    dTopLeft == 0 && dBottomLeft == 0 && dBottomRight ==0) SpawnIceObject(position, iceAssets.Ice3CornerPiece, GetRot(Rot.BottomLeft), isLast); // C small 3 corner piece bottom left
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dBottomLeft == 0 && dBottomRight == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.Ice3CornerPiece, GetRot(Rot.BottomRight), toSave); // C small 3 corner piece bottom right
+                    dBottomLeft == 0 && dBottomRight == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.Ice3CornerPiece, GetRot(Rot.BottomRight), isLast); // C small 3 corner piece bottom right
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopLeft == 0 && dBottomLeft == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.Ice3CornerPiece, GetRot(Rot.TopLeft), toSave); // C small 3 corner piece top left
+                    dTopLeft == 0 && dBottomLeft == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.Ice3CornerPiece, GetRot(Rot.TopLeft), isLast); // C small 3 corner piece top left
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopLeft == 0 && dBottomRight == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.Ice3CornerPiece, GetRot(Rot.TopRight), toSave); // C small 3 corner piece top right
+                    dTopLeft == 0 && dBottomRight == 0 && dTopRight == 0) SpawnIceObject(position, iceAssets.Ice3CornerPiece, GetRot(Rot.TopRight), isLast); // C small 3 corner piece top right
 
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopRight == 0 && dTopLeft == 0) SpawnIceObject(position, iceAssets.Ice2CornerPiece, GetRot(Rot.TopRight), toSave); // C small 2 corner piece horizontal top
+                    dTopRight == 0 && dTopLeft == 0) SpawnIceObject(position, iceAssets.Ice2CornerPiece, GetRot(Rot.TopRight), isLast); // C small 2 corner piece horizontal top
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dBottomRight == 0 && dBottomLeft == 0) SpawnIceObject(position, iceAssets.Ice2CornerPiece, GetRot(Rot.BottomLeft), toSave); // C small 2 corner piece horizontal bottom
+                    dBottomRight == 0 && dBottomLeft == 0) SpawnIceObject(position, iceAssets.Ice2CornerPiece, GetRot(Rot.BottomLeft), isLast); // C small 2 corner piece horizontal bottom
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopRight == 0 && dBottomRight == 0) SpawnIceObject(position, iceAssets.Ice2CornerPiece, GetRot(Rot.BottomRight), toSave); // C small 2 corner piece vertical right
+                    dTopRight == 0 && dBottomRight == 0) SpawnIceObject(position, iceAssets.Ice2CornerPiece, GetRot(Rot.BottomRight), isLast); // C small 2 corner piece vertical right
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopLeft == 0 && dBottomLeft == 0) SpawnIceObject(position, iceAssets.Ice2CornerPiece, GetRot(Rot.TopLeft), toSave); // C small 2 corner piece vertical left
+                    dTopLeft == 0 && dBottomLeft == 0) SpawnIceObject(position, iceAssets.Ice2CornerPiece, GetRot(Rot.TopLeft), isLast); // C small 2 corner piece vertical left
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopLeft == 0 && dBottomRight == 0) SpawnIceObject(position, iceAssets.Ice2CornerDiagonalPiece, GetRot(Rot.TopLeft), toSave); // C small 2 corner diagonal piece top left
+                    dTopLeft == 0 && dBottomRight == 0) SpawnIceObject(position, iceAssets.Ice2CornerDiagonalPiece, GetRot(Rot.TopLeft), isLast); // C small 2 corner diagonal piece top left
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopRight == 0 && dBottomLeft == 0) SpawnIceObject(position, iceAssets.Ice2CornerDiagonalPiece, GetRot(Rot.TopRight), toSave); // C small 2 corner diagonal piece top right
+                    dTopRight == 0 && dBottomLeft == 0) SpawnIceObject(position, iceAssets.Ice2CornerDiagonalPiece, GetRot(Rot.TopRight), isLast); // C small 2 corner diagonal piece top right
 
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopLeft == 0) SpawnIceObject(position, iceAssets.IceCornerPiece, GetRot(Rot.TopLeft), toSave); // C small corner piece top left
+                    dTopLeft == 0) SpawnIceObject(position, iceAssets.IceCornerPiece, GetRot(Rot.TopLeft), isLast); // C small corner piece top left
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dTopRight == 0) SpawnIceObject(position, iceAssets.IceCornerPiece, GetRot(Rot.TopRight), toSave); // C small corner piece top right
+                    dTopRight == 0) SpawnIceObject(position, iceAssets.IceCornerPiece, GetRot(Rot.TopRight), isLast); // C small corner piece top right
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceCornerPiece, GetRot(Rot.BottomLeft), toSave); // C small corner piece bottom left
+                    dBottomLeft == 0) SpawnIceObject(position, iceAssets.IceCornerPiece, GetRot(Rot.BottomLeft), isLast); // C small corner piece bottom left
             else if (prevX == 1 && current == 1 && nextX == 1 &&
                     prevY == 1 && nextY == 1 &&
-                    dBottomRight == 0) SpawnIceObject(position, iceAssets.IceCornerPiece, GetRot(Rot.BottomRight), toSave); // C small corner piece bottom right
+                    dBottomRight == 0) SpawnIceObject(position, iceAssets.IceCornerPiece, GetRot(Rot.BottomRight), isLast); // C small corner piece bottom right
 
             else if (prevX == 1 && current == 1 && nextX == 1 &&
-                    prevY == 0 && nextY == 0) SpawnIceObject(position, iceAssets.IceHPiece, GetRot(Rot.TopLeft), toSave); // H piece Horizontal
+                    prevY == 0 && nextY == 0) SpawnIceObject(position, iceAssets.IceHPiece, GetRot(Rot.TopLeft), isLast); // H piece Horizontal
             else if (prevX == 0 && current == 1 && nextX == 0 &&
-                    prevY == 1 && nextY == 1) SpawnIceObject(position, iceAssets.IceHPiece, GetRot(Rot.BottomLeft), toSave); // H piece Vertical
-            else if (current == 0) SpawnIceObject(position, iceAssets.IceFlat, GetRot(Rot.BottomLeft), toSave); // Solid
-            else if (current == 1) SpawnIceObject(position, iceAssets.IceEmptyPiece, GetRot(Rot.BottomLeft), toSave); // Empty 
+                    prevY == 1 && nextY == 1) SpawnIceObject(position, iceAssets.IceHPiece, GetRot(Rot.BottomLeft), isLast); // H piece Vertical
+            else if (current == 0) SpawnIceObject(position, iceAssets.IceFlat, GetRot(Rot.BottomLeft), isLast); // Solid
+            else if (current == 1) SpawnIceObject(position, iceAssets.IceEmptyPiece, GetRot(Rot.BottomLeft), isLast); // Empty 
         }
     }
     void SpawnIceObject(Vector3 position, GameObject iceObject, Quaternion orientation , bool last = false)
@@ -848,6 +941,18 @@ public class ObstacleAssets
     public GameObject Sledge;
 }
 
+
+
+[Serializable]
+public class CollectableAssets{
+    public GameObject coco; 
+    public GameObject hotdog; 
+    public GameObject soup; 
+
+
+}
+
+
 [Serializable]
 public class ObstacleOptions
 {
@@ -886,4 +991,14 @@ public enum ObstacleType
     Jump = 0,
     RightLegUp = 1,
     LeftLegUp = 2
+}
+
+public enum Tutorialtype
+{
+    MoveLeft = 0,
+    MoveRight = 1,
+    Jump = 2,
+    RightLegUp = 3,
+    LeftLegUp = 4,
+    Crouch = 5
 }

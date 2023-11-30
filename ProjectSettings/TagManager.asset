@@ -9,6 +9,16 @@ TagManager:
   - RightLegUp
   - CameraDuck
   - LeftLegUp
+  - TutorialJump
+  - TutorialRightLegUp
+  - TutorialLeftLegUp
+  - TutorialCrouch
+  - TutorialMoveRight
+  - TutorialMoveLeft
+  - Hands
+  - CollectableCoco
+  - CollectableHotdog
+  - CollectableSoup
   layers:
   - Default
   - TransparentFX

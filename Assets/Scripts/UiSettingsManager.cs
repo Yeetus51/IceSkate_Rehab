@@ -27,6 +27,7 @@ public class UiSettingsManager : MonoBehaviour
     [SerializeField] Slider speed;
     [SerializeField] Button deleteButton; 
     [SerializeField] Button skipButton; 
+    [SerializeField] Button startButton; 
     [SerializeField] TMP_Text totalDurationText; 
 
 
@@ -35,6 +36,7 @@ public class UiSettingsManager : MonoBehaviour
     [SerializeField] GameObject addButtonPrefab;
 
     [Header("Containers")]
+    [SerializeField] GameObject uiContainer; 
     [SerializeField] GameObject sectionsContainer;  
     [SerializeField] GridLayoutGroup sectionsGridLayout; 
 
@@ -52,6 +54,8 @@ public class UiSettingsManager : MonoBehaviour
     private LevelSection currentPlayingSection = null;
 
     private Button addButton; 
+
+    bool gameStarted = false; 
 
 
     Dictionary<LevelSection, UiLevelSection> uiLevelSections = new Dictionary<LevelSection, UiLevelSection>();
@@ -323,6 +327,9 @@ public class UiSettingsManager : MonoBehaviour
         }
 
         levelManager.SetSectionsData(sections);
+        toggleSettingsUi();
+        startButton.interactable = false;
+        gameStarted = true; 
     }
 
     public void InvokeTutorialPreset() {
@@ -410,5 +417,15 @@ public class UiSettingsManager : MonoBehaviour
         SetSliderValue(speed, preset.speed,0.05f,0.3f); 
 
         InvokeSectionSettings(activeLevelSection);
+    }
+    void toggleSettingsUi(){
+        uiContainer.SetActive(!uiContainer.activeInHierarchy);
+    }
+
+
+    void Update(){
+        if(Input.GetKeyDown(KeyCode.Escape) && gameStarted){
+            toggleSettingsUi();
+        }
     }
 }
