@@ -4347,6 +4347,7 @@ MonoBehaviour:
   tutorialPrefab: {fileID: 4131180139978709524, guid: 917a43928b939ac49b1ee33e585bc24e,
     type: 3}
   uiSettingsManager: {fileID: 1875807740}
+  gameUiManager: {fileID: 1155692118}
 --- !u!4 &556234583
 Transform:
   m_ObjectHideFlags: 0
@@ -14248,7 +14249,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Score: 94%'
+  m_text: 'Score: bruh%'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

@@ -104,11 +104,6 @@ public class GameUiManager : MonoBehaviour
             }
         }
     }
-    private void Update() {
-        if (Input.GetKeyDown(KeyCode.M)) {
-            InvokeEndScreen(35, 12, 43, 49);
-        }
-    }
     public void CollectableScore(string collectable) {
         switch (collectable) {
             case "CollectableCoco":
@@ -125,13 +120,20 @@ public class GameUiManager : MonoBehaviour
                 break;
         }
     }
-    public void InvokeEndScreen(int totalCoco, int totalHotDog, int totalSoup, float score) {
+    public void InvokeEndScreen(int totalCoco, int totalHotDog, int totalSoup, int totalSpawnedObstacles) {
         endGameUI.SetActive(true);
         hotChocScore.text = collectedHotChocs + "/" + totalCoco.ToString();
         hotDogScore.text = collectedHotDog + "/" + totalHotDog.ToString();
         soupScore.text = collectedSoup + "/" + totalSoup.ToString();
 
-        scoreText.text = "Score: " + score + "%";
+
+        float score = 0;
+        if(totalSpawnedObstacles != 0) {
+            score = playerHitCount / totalSpawnedObstacles;
+        }
+        score = (1 - score) * 100; 
+
+        scoreText.text = "Score: " + score.ToString() + "%";
 
         Time.timeScale = 0;
     }

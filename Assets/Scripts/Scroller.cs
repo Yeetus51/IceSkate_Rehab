@@ -87,12 +87,14 @@ public class Scroller : MonoBehaviour
     private int initialSpawnIceCallCountSection; 
 
     private int totalSpawnedObstacles; 
+    private int totalSpawnedCoco;
+    private int totalSpawnedHotdog;
+    private int totalSpawnedSoup;
 
-    [SerializeField] UiSettingsManager uiSettingsManager; 
-/*    private bool spawningExtraIce;
-    bool once = false; */
-
-
+    [SerializeField] UiSettingsManager uiSettingsManager;
+    /*    private bool spawningExtraIce;
+        bool once = false; */
+    [SerializeField] GameUiManager gameUiManager;
 
     private Dictionary<GameObject, Queue<GameObject>> objectPools;
     private Dictionary<GameObject, GameObject> poolHolders;
@@ -119,6 +121,10 @@ public class Scroller : MonoBehaviour
         obstacleSpawnRate = section.obstacleSpawnRate; 
         speed = section.speed; 
         breakTime = section.breakTime; 
+
+        if(index == sections.Count - 1) {
+            gameUiManager.InvokeEndScreen(totalSpawnedCoco, totalSpawnedHotdog, totalSpawnedSoup, totalSpawnedObstacles);
+        }
 
 
         if(index < sections.Count){
@@ -479,6 +485,18 @@ public class Scroller : MonoBehaviour
         if(offset != Vector3.zero)position += offset; 
         newObject.transform.position = position;
         newObject.transform.rotation = orientation;
+
+        switch (tag) {
+            case "CollectableCoco":
+            totalSpawnedCoco++;
+            break;
+            case "CollectableHotdog":
+            totalSpawnedHotdog++;
+            break;
+            case "CollectableSoup":
+            totalSpawnedSoup++;
+            break;
+        }
 
         if(tag != "") newObject.tag = tag; 
 
