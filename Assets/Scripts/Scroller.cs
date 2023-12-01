@@ -122,7 +122,10 @@ public class Scroller : MonoBehaviour
         speed = section.speed; 
         breakTime = section.breakTime; 
 
-        if(index == sections.Count - 1) {
+
+        Debug.Log(index);
+        Debug.Log(breakTime);
+        if(index == sections.Count) {
             gameUiManager.InvokeEndScreen(totalSpawnedCoco, totalSpawnedHotdog, totalSpawnedSoup, totalSpawnedObstacles);
         }
 

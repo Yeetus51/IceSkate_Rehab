@@ -135,6 +135,7 @@ public class GameUiManager : MonoBehaviour
 
         scoreText.text = "Score: " + score.ToString() + "%";
 
-        Time.timeScale = 0;
+
+        
     }
 }
