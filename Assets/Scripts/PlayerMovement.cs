@@ -63,7 +63,6 @@ public class PlayerMovement : MonoBehaviour
 
         if(!keyboardControlls){
             float xPosition = avatarController.GetPlayerXPos() * distanceMultiplier;
-            Debug.Log(xPosition);
 
             if (snapping && interpolatedSnapping)
             {
