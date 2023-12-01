@@ -11,9 +11,9 @@ public class FollowHands : MonoBehaviour
 
 
     [SerializeField] Transform rightCollider;  
-    [SerializeField] Transform leftCollider;  
+    [SerializeField] Transform leftCollider;
 
-
+    [SerializeField] GameUiManager gameUiManager;
 
     void FixedUpdate(){
         rightCollider.position = rightHand.position; 
@@ -24,21 +24,7 @@ public class FollowHands : MonoBehaviour
 
 
     void OnTriggerEnter(Collider other){
-
-        switch(other.tag){
-
-            case "CollectableCoco":
-                
-                break;
-            case "CollectableHotdog":
-                
-                break;
-            case "CollectableSoup":
-                
-                break;
-        }
-
-
+        gameUiManager.CollectableScore(other.tag);
     }
 
 }

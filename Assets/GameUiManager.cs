@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI; 
-using TMPro; 
+using TMPro;
+using System;
 
 public class GameUiManager : MonoBehaviour
 {
@@ -27,10 +28,25 @@ public class GameUiManager : MonoBehaviour
     [SerializeField] Sprite leftLegUp; 
 
     private float timer = 0; 
-    private float tutorioaltimer = 0; 
+    private float tutorioaltimer = 0;
 
+    [SerializeField] TextMeshProUGUI collectableHotChoc;
+    [SerializeField] TextMeshProUGUI hotChocScore;
+    int collectedHotChocs = 0;
+    [SerializeField] TextMeshProUGUI collectableHotDog;
+    [SerializeField] TextMeshProUGUI hotDogScore;
+    int collectedHotDog = 0;
+    [SerializeField] TextMeshProUGUI collectableSoup;
+    [SerializeField] TextMeshProUGUI soupScore;
+    int collectedSoup = 0;
+
+    int playerHitCount;
+
+    [SerializeField] TextMeshProUGUI scoreText;
+    [SerializeField] GameObject endGameUI;
 
     public void InvokeVigniette(){
+        playerHitCount++;
         timer = 0; 
     }
 
@@ -88,5 +104,35 @@ public class GameUiManager : MonoBehaviour
             }
         }
     }
+    private void Update() {
+        if (Input.GetKeyDown(KeyCode.M)) {
+            InvokeEndScreen(35, 12, 43, 49);
+        }
+    }
+    public void CollectableScore(string collectable) {
+        switch (collectable) {
+            case "CollectableCoco":
+                collectedHotChocs++;
+                collectableHotChoc.text = collectedHotChocs.ToString();
+                break;
+            case "CollectableHotdog":
+                collectedHotDog++;
+                collectableHotDog.text = collectedHotDog.ToString();
+                break;
+            case "CollectableSoup":
+                collectedSoup++;
+                collectableSoup.text = collectedSoup.ToString();
+                break;
+        }
+    }
+    public void InvokeEndScreen(int totalCoco, int totalHotDog, int totalSoup, float score) {
+        endGameUI.SetActive(true);
+        hotChocScore.text = collectedHotChocs + "/" + totalCoco.ToString();
+        hotDogScore.text = collectedHotDog + "/" + totalHotDog.ToString();
+        soupScore.text = collectedSoup + "/" + totalSoup.ToString();
 
+        scoreText.text = "Score: " + score + "%";
+
+        Time.timeScale = 0;
+    }
 }
