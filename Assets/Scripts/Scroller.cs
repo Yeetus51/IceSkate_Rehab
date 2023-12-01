@@ -86,6 +86,8 @@ public class Scroller : MonoBehaviour
     private int spawnIceCallCountSection; 
     private int initialSpawnIceCallCountSection; 
 
+    private int totalSpawnedObstacles; 
+
     [SerializeField] UiSettingsManager uiSettingsManager; 
 /*    private bool spawningExtraIce;
     bool once = false; */
@@ -454,8 +456,9 @@ public class Scroller : MonoBehaviour
 
         method?.Invoke(); 
     }
-    void SpawnSingleObstacle(GameObject prefab, int lane, Quaternion orientation, Tutorialtype tutorialtype)
+    GameObject SpawnSingleObstacle(GameObject prefab, int lane, Quaternion orientation, Tutorialtype tutorialtype)
     {
+        totalSpawnedObstacles++; 
 
         if(tutorialMode) SpawnTutorial(tutorialtype,tutorialPrefab);
         GameObject newObject = GetPooledObject(prefab);
@@ -464,6 +467,7 @@ public class Scroller : MonoBehaviour
 
         newObject.transform.position = position;
         newObject.transform.rotation = orientation; 
+        return newObject; 
     }
 
     void SpawnMultipleCollectables(GameObject prefab, int amount, int lane, Quaternion orientation, string tag, Vector3 offset)
@@ -483,6 +487,8 @@ public class Scroller : MonoBehaviour
     void SpawnMultipleObstacles(GameObject prefab, int amount, int lane, Quaternion orientation,bool first, Tutorialtype tutorialtype, string tag, Vector3 offset)
     {
         if (amount == 0) return; 
+
+        totalSpawnedObstacles++; 
 
         if(tutorialMode && first) SpawnTutorial(tutorialtype,tutorialPrefab); 
         GameObject newObject = GetPooledObject(prefab);
