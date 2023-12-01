@@ -81,7 +81,8 @@ public class Scroller : MonoBehaviour
     private int alwaysOpenLane = 2;
     private int changeOpenLaneIn = 5;
 
-    private int spawnIceCallCount; 
+    private int spawnIceCallCountObstacles; 
+    private int spawnIceCallCountCollectables; 
     private int spawnIceCallCountSection; 
     private int initialSpawnIceCallCountSection; 
 
@@ -323,21 +324,9 @@ public class Scroller : MonoBehaviour
         IncrementIce();
         changeOpenLaneIn--;
 
-        spawnIceCallCount--; 
+        spawnIceCallCountObstacles--; 
+        spawnIceCallCountCollectables--;
         spawnIceCallCountSection--; 
-
-
-/*        if (spawnDistance - previousIceObject.transform.position.z > 3)
-        {
-            Debug.Log("Spawining new Shit" + previousIceObject.transform.position);
-            if (!once)
-            {
-                once = true;
-                //speed = 0.1f;
-                SpawnIce();
-                spawningExtraIce = true; 
-            }
-        }*/
     }
     void SpawnRandomHouse(){
         int index = Random.Range(0,houseAssets.Count); 
@@ -392,13 +381,13 @@ public class Scroller : MonoBehaviour
 
         switch(type){
             case 0:
-                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleCollectables(collectableAssets.coco,amount,alwaysOpenLane,Quaternion.identity,tag = "CollectableCoco", offset)));
+                StartCoroutine(WaitForIceCollectables(startPosition, () => SpawnMultipleCollectables(collectableAssets.coco,amount,alwaysOpenLane,Quaternion.identity,tag = "CollectableCoco", offset)));
             break;
             case 1:
-                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleCollectables(collectableAssets.hotdog,amount,alwaysOpenLane,Quaternion.identity,tag = "CollectableHotdog", offset)));
+                StartCoroutine(WaitForIceCollectables(startPosition, () => SpawnMultipleCollectables(collectableAssets.hotdog,amount,alwaysOpenLane,Quaternion.identity,tag = "CollectableHotdog", offset)));
             break;
             case 2:
-                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleCollectables(collectableAssets.soup,amount,alwaysOpenLane,Quaternion.identity, tag = "CollectableSoup", offset)));
+                StartCoroutine(WaitForIceCollectables(startPosition, () => SpawnMultipleCollectables(collectableAssets.soup,amount,alwaysOpenLane,Quaternion.identity, tag = "CollectableSoup", offset)));
             break;
         }
     }
@@ -423,29 +412,36 @@ public class Scroller : MonoBehaviour
                 int rand = Random.Range(0, 2);
                 if (rand == 0)
                 {
-                    StartCoroutine(WaitForIce(startPosition, () => SpawnSingleObstacle(obstacleAssets.IceDebris, alwaysOpenLane, GetRot(Rot.TopRight))));
-                    if(tutorialMode) SpawnTutorial(Tutorialtype.Jump,tutorialPrefab); 
+                    StartCoroutine(WaitForIceObstacles(startPosition, () => SpawnSingleObstacle(obstacleAssets.IceDebris, alwaysOpenLane, GetRot(Rot.TopRight),Tutorialtype.Jump)));
+                    //if(tutorialMode) StartCoroutine(WaitForIceObstacles(startPosition, () => SpawnTutorial(Tutorialtype.Jump,tutorialPrefab))); 
                 }
                 else
                 {
-                    StartCoroutine(WaitForIce(startPosition, () => SpawnSingleObstacle(obstacleAssets.Sledge, alwaysOpenLane, GetRot(Rot.TopRight))));
-                    if(tutorialMode) SpawnTutorial(Tutorialtype.Jump,tutorialPrefab); 
+                    StartCoroutine(WaitForIceObstacles(startPosition, () => SpawnSingleObstacle(obstacleAssets.Sledge, alwaysOpenLane, GetRot(Rot.TopRight), Tutorialtype.Jump)));
+                    //if(tutorialMode) StartCoroutine(WaitForIceObstacles(startPosition, () => SpawnTutorial(Tutorialtype.Jump,tutorialPrefab)));  
                 }
                 break;
             case (int)ObstacleType.LeftLegUp:
-                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.BottomLeft),"LeftLegUp")));
-                if(tutorialMode) SpawnTutorial(Tutorialtype.LeftLegUp,tutorialPrefab); 
+                StartCoroutine(WaitForIceObstacles(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.BottomLeft),true,Tutorialtype.LeftLegUp,"LeftLegUp",Vector3.zero)));
+                //if(tutorialMode) StartCoroutine(WaitForIceObstacles(startPosition, () => SpawnTutorial(Tutorialtype.LeftLegUp,tutorialPrefab))); 
                 break;
             case (int)ObstacleType.RightLegUp:
-                StartCoroutine(WaitForIce(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.TopRight))));
-                if(tutorialMode) SpawnTutorial(Tutorialtype.RightLegUp,tutorialPrefab); 
+                StartCoroutine(WaitForIceObstacles(startPosition, () => SpawnMultipleObstacles(obstacleAssets.OrangeCone, amount, alwaysOpenLane, GetRot(Rot.TopRight),true,Tutorialtype.RightLegUp,"RightLegUp",Vector3.zero)));
+                //if(tutorialMode) StartCoroutine(WaitForIceObstacles(startPosition, () => SpawnTutorial(Tutorialtype.RightLegUp,tutorialPrefab))); 
                 break;
         }
     }
-    IEnumerator WaitForIce(int numberOfCalls, Action method)
+    IEnumerator WaitForIceObstacles(int numberOfCalls, Action method)
     {
-        spawnIceCallCount = numberOfCalls; 
-        yield return new WaitUntil(() => spawnIceCallCount <= 0);
+        spawnIceCallCountObstacles = numberOfCalls; 
+        yield return new WaitUntil(() => spawnIceCallCountObstacles <= 0);
+
+        if(holeGenerationPause == 0)method?.Invoke(); 
+    }
+    IEnumerator WaitForIceCollectables(int numberOfCalls, Action method)
+    {
+        spawnIceCallCountCollectables = numberOfCalls; 
+        yield return new WaitUntil(() => spawnIceCallCountCollectables <= 0);
 
         if(holeGenerationPause == 0)method?.Invoke(); 
     }
@@ -458,8 +454,10 @@ public class Scroller : MonoBehaviour
 
         method?.Invoke(); 
     }
-    void SpawnSingleObstacle(GameObject prefab, int lane, Quaternion orientation)
+    void SpawnSingleObstacle(GameObject prefab, int lane, Quaternion orientation, Tutorialtype tutorialtype)
     {
+
+        if(tutorialMode) SpawnTutorial(tutorialtype,tutorialPrefab);
         GameObject newObject = GetPooledObject(prefab);
 
         Vector3 position = Vector3.forward * previousIceObject.transform.position.z  + Vector3.forward *2 - Vector3.forward * speed + Vector3.right * (lane-2) * 2;
@@ -470,28 +468,32 @@ public class Scroller : MonoBehaviour
 
     void SpawnMultipleCollectables(GameObject prefab, int amount, int lane, Quaternion orientation, string tag, Vector3 offset)
     {
-        SpawnMultipleObjects(prefab,amount,lane,orientation,tag, offset);
-    }
-    void SpawnMultipleObstacles(GameObject prefab, int amount, int lane, Quaternion orientation, string tag = "")
-    {
-        SpawnMultipleObjects(prefab,amount,lane,orientation,tag);
-    }
-    void SpawnMultipleObjects(GameObject prefab, int amount, int lane, Quaternion orientation, string tag = ""){
-        SpawnMultipleObjects(prefab, amount, lane, orientation,tag,Vector3.zero); 
-    }
-    void SpawnMultipleObjects(GameObject prefab, int amount, int lane, Quaternion orientation, string tag, Vector3 offset)
-    {
         if (amount == 0) return; 
 
         GameObject newObject = GetPooledObject(prefab);
         Vector3 position = Vector3.forward * previousIceObject.transform.position.z + Vector3.forward * 2 - Vector3.forward * speed + Vector3.right * (lane - 2) * 2;
-        position += offset; 
+        if(offset != Vector3.zero)position += offset; 
         newObject.transform.position = position;
         newObject.transform.rotation = orientation;
 
         if(tag != "") newObject.tag = tag; 
 
-        StartCoroutine(WaitForIce(1, () => SpawnMultipleObjects(prefab, amount - 1,lane, orientation, tag, offset)));
+        StartCoroutine(WaitForIceCollectables(1, () => SpawnMultipleCollectables(prefab, amount - 1,lane, orientation, tag, offset)));
+    }
+    void SpawnMultipleObstacles(GameObject prefab, int amount, int lane, Quaternion orientation,bool first, Tutorialtype tutorialtype, string tag, Vector3 offset)
+    {
+        if (amount == 0) return; 
+
+        if(tutorialMode && first) SpawnTutorial(tutorialtype,tutorialPrefab); 
+        GameObject newObject = GetPooledObject(prefab);
+        Vector3 position = Vector3.forward * previousIceObject.transform.position.z + Vector3.forward * 2 - Vector3.forward * speed + Vector3.right * (lane - 2) * 2;
+        if(offset != Vector3.zero)position += offset; 
+        newObject.transform.position = position;
+        newObject.transform.rotation = orientation;
+
+        if(tag != "") newObject.tag = tag; 
+
+        StartCoroutine(WaitForIceObstacles(1, () => SpawnMultipleObstacles(prefab, amount - 1,lane, orientation,false, tutorialtype, tag, offset)));
     }
 
 

@@ -7,6 +7,7 @@ using Unity.VisualScripting;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [SerializeField] int numberOfTutorialsPerAction = 2; 
     public int sideLanes = 2;
 
     private int currentLane = 0;
@@ -143,42 +144,42 @@ public class PlayerMovement : MonoBehaviour
                 break;
 
             case "TutorialMoveLeft":
-                if(GetTutorialCount(Tutorialtype.MoveLeft) < 2){
+                if(GetTutorialCount(Tutorialtype.MoveLeft) < numberOfTutorialsPerAction){
                     gameUiManager.InvokeTutorial(Tutorialtype.MoveLeft);
                     IncrementTutorialCount(Tutorialtype.MoveLeft); 
                 }
                 break;
 
             case "TutorialMoveRight":
-                if(GetTutorialCount(Tutorialtype.MoveRight) < 2){
+                if(GetTutorialCount(Tutorialtype.MoveRight) < numberOfTutorialsPerAction){
                     gameUiManager.InvokeTutorial(Tutorialtype.MoveRight);
                     IncrementTutorialCount(Tutorialtype.MoveRight); 
                 }
                 break;
 
             case "TutorialJump":
-                if(GetTutorialCount(Tutorialtype.Jump) < 2){
+                if(GetTutorialCount(Tutorialtype.Jump) < numberOfTutorialsPerAction){
                     gameUiManager.InvokeTutorial(Tutorialtype.Jump);
                     IncrementTutorialCount(Tutorialtype.Jump); 
                 }
                 break;
 
             case "TutorialRightLegUp":
-                if(GetTutorialCount(Tutorialtype.RightLegUp) < 2){
+                if(GetTutorialCount(Tutorialtype.RightLegUp) < numberOfTutorialsPerAction){
                     gameUiManager.InvokeTutorial(Tutorialtype.RightLegUp);
                     IncrementTutorialCount(Tutorialtype.RightLegUp); 
                 }
                 break;
 
             case "TutorialLeftLegUp":
-                if(GetTutorialCount(Tutorialtype.LeftLegUp) < 2){
+                if(GetTutorialCount(Tutorialtype.LeftLegUp) < numberOfTutorialsPerAction){
                     gameUiManager.InvokeTutorial(Tutorialtype.LeftLegUp);
                     IncrementTutorialCount(Tutorialtype.LeftLegUp); 
                 }
                 break;
 
             case "TutorialCrouch":
-                if(GetTutorialCount(Tutorialtype.Crouch) < 2){
+                if(GetTutorialCount(Tutorialtype.Crouch) < numberOfTutorialsPerAction){
                     gameUiManager.InvokeTutorial(Tutorialtype.Crouch);
                     IncrementTutorialCount(Tutorialtype.Crouch); 
                 }
