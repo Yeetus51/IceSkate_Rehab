@@ -93,6 +93,12 @@ public class UiSettingsManager : MonoBehaviour
         speed.onValueChanged.AddListener(delegate{speed.value = ValidateAndSetSliderValue(ref activeLevelSection.speed,speed.value,0.05f,0.3f,0.025f);PresetChanged();});
         InvokeTutorialPreset(); 
     }
+
+    public void GameEnded(){
+        gameStarted = false;
+        uiContainer.SetActive(false);
+
+    }
     private void InstantiateAddButton(){
         GameObject newAddButton = Instantiate(addButtonPrefab,sectionsContainer.transform);
         addButton = newAddButton.GetComponent<Button>(); 

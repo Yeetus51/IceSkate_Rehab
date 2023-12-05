@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI; 
 using TMPro;
 using System;
+using UnityEngine.SceneManagement; 
 
 public class GameUiManager : MonoBehaviour
 {
@@ -26,6 +27,7 @@ public class GameUiManager : MonoBehaviour
     [SerializeField] Sprite crouch; 
     [SerializeField] Sprite rightLeftUp; 
     [SerializeField] Sprite leftLegUp; 
+    [SerializeField] AudioSource source;
 
     private float timer = 0; 
     private float tutorioaltimer = 0;
@@ -44,6 +46,9 @@ public class GameUiManager : MonoBehaviour
 
     [SerializeField] TextMeshProUGUI scoreText;
     [SerializeField] GameObject endGameUI;
+
+
+    [SerializeField] Scroller scroller; 
 
     public void InvokeVigniette(){
         playerHitCount++;
@@ -105,17 +110,21 @@ public class GameUiManager : MonoBehaviour
         }
     }
     public void CollectableScore(string collectable) {
+        
         switch (collectable) {
             case "CollectableCoco":
                 collectedHotChocs++;
+                source.Play();
                 collectableHotChoc.text = collectedHotChocs.ToString();
                 break;
             case "CollectableHotdog":
                 collectedHotDog++;
+                source.Play();
                 collectableHotDog.text = collectedHotDog.ToString();
                 break;
             case "CollectableSoup":
                 collectedSoup++;
+                source.Play();
                 collectableSoup.text = collectedSoup.ToString();
                 break;
         }
@@ -132,10 +141,29 @@ public class GameUiManager : MonoBehaviour
             score = playerHitCount / totalSpawnedObstacles;
         }
         score = (1 - score) * 100; 
+        score = Mathf.Clamp(score,0,100); 
 
         scoreText.text = "Score: " + score.ToString() + "%";
 
-
-        
+        GameEnded(); 
     }
+
+    void GameEnded(){
+
+        scroller.GameEnded();
+
+        playerHitCount = 0;
+        collectedSoup = 0;
+        collectedHotDog = 0; 
+        collectedHotChocs = 0;
+
+
+    }
+
+
+    public void Restart(){
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); 
+    }
+
+
 }

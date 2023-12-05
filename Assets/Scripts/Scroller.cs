@@ -135,8 +135,14 @@ public class Scroller : MonoBehaviour
         }
     }
 
-    private void Awake()
-    {
+    public void GameEnded(){
+        speed = 0.05f; 
+        breakTime = true; 
+        tutorialMode = false;
+        bridgeSpawnRate = 0; 
+        uiSettingsManager.GameEnded();
+
+
 
     }
 

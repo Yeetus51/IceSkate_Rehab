@@ -8,7 +8,13 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Other/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/OmairScene.unity
     guid: 57bb5fd3d39bbf04c848568820ca6b3a
+  - enabled: 0
+    path: Assets/Scenes/ArthurScene.unity
+    guid: 6bbe098219f5b9449b5230361fec16c5
+  - enabled: 1
+    path: Assets/Scenes/Omair2Scene.unity
+    guid: 768a5c13f0b08b842be060d5f5cdab42
   m_configObjects: {}
